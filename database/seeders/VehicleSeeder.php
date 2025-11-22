@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Vehicle;
+use App\Models\VehicleBrand;
 use App\Models\VehicleImage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -11,7 +12,7 @@ class VehicleSeeder extends Seeder
 {
     public function run(): void
     {
-        $brands = [
+        $brandsWithModels = [
             'Mercedes-Benz' => ['C 200', 'E 220d', 'E 350 e', 'GLC 300', 'A 180', 'CLA 250'],
             'Audi'          => ['A4 40 TFSI', 'A6 45 TDI', 'Q5 45 TFSI', 'A3 35 TDI', 'Q3 Sportback'],
             'BMW'           => ['320i', '520d', '530e', 'X3 20d', 'X5 30d', 'M440i'],
@@ -24,15 +25,28 @@ class VehicleSeeder extends Seeder
         $gears = ['Automatik', 'Schaltgetriebe'];
         $statuses = ['verfügbar', 'reserviert', 'verkauft'];
 
+        // 1️⃣ Brands vorbereiten (nur einmal anlegen)
+        foreach ($brandsWithModels as $brandName => $models) {
+            VehicleBrand::firstOrCreate(
+                ['slug' => Str::slug($brandName)],
+                ['name' => $brandName]
+            );
+        }
+
+        // 2️⃣ Fahrzeuge generieren
         for ($i = 0; $i < 30; $i++) {
 
-            $brand = array_rand($brands);
-            $model = $brands[$brand][array_rand($brands[$brand])];
+            // zufällige Marke wählen
+            $brandName = array_rand($brandsWithModels);
+            $brand = VehicleBrand::where('name', $brandName)->first();
 
-            $slug = Str::slug($brand . '-' . $model . '-' . $i);
+            // zufälliges Modell zuweisen
+            $model = $brandsWithModels[$brandName][array_rand($brandsWithModels[$brandName])];
+
+            $slug = Str::slug($brandName . '-' . $model . '-' . $i);
 
             $vehicle = Vehicle::create([
-                'brand'       => $brand,
+                'brand_id'    => $brand->id,
                 'model'       => $model,
                 'slug'        => $slug,
                 'year'        => rand(2017, 2024),
@@ -45,7 +59,7 @@ class VehicleSeeder extends Seeder
                 'badge'       => fake()->randomElement([null, 'TOP', 'NEU', 'SALE', 'ANGEBOT']),
             ]);
 
-            // Fake-Bilder generieren
+            // 3️⃣ Fake-Bilder hinzufügen
             $countImages = rand(3, 6);
 
             for ($j = 1; $j <= $countImages; $j++) {
