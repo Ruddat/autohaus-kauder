@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CUSTOM AUTOHAUS KLASSEN */
+@layer utilities {
+
+  .gradient-bg {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  }
+
+
+  .filter-btn.active {
+    background: linear-gradient(to right, #B91C1C, #8B0000);
+    color: white !important;
+  }
+}
+
+@layer components {
+
+  .vehicle-card {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .vehicle-card:hover {
+    transform: translateY(-5px);
+  }
+}
+
+
+/* Cookie Banner / Overlay / Modal */
+@layer components {
+
+  .cookie-overlay {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .cookie-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .cookie-banner {
+    transform: translateY(100%);
+  }
+
+  .cookie-banner.show {
+    transform: translateY(0);
+  }
+
+  .cookie-settings {
+    opacity: 0;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.75);
+  }
+
+  .cookie-settings.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Toggle-Switch */
+  .cookie-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .cookie-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background-color: #444;
+    transition: background-color 0.3s ease;
+  }
+
+  .cookie-slider::before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    top: 4px;
+    border-radius: 9999px;
+    background-color: #fff;
+    transition: transform 0.3s ease;
+  }
+
+  .cookie-toggle input:checked + .cookie-slider {
+    background: linear-gradient(to right, #B91C1C, #8B0000);
+  }
+
+  .cookie-toggle input:checked + .cookie-slider::before {
+    transform: translateX(24px);
+  }
+}
+
+
+@layer components {
+
+  /* SVG Progress Ring */
+  .progress-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotate(-90deg); /* Start oben */
+      pointer-events: none;
+  }
+
+  .progress-bg {
+      fill: none;
+      stroke: #444;
+      stroke-width: 5;
+  }
+
+  .progress-bar {
+      fill: none;
+      stroke: #B91C1C;
+      stroke-width: 5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.2s ease;
+  }
+
+  /* Back To Top Core */
+  .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border-radius: 9999px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 900;
+  }
+
+  .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+  }
+
+  .back-to-top:hover {
+      transform: translateY(-5px);
+  }
+
+  /* Mobile Style */
+  @media (max-width: 768px) {
+      .back-to-top {
+          width: 50px;
+          height: 50px;
+      }
+
+      .progress-ring {
+          width: 50px;
+          height: 50px;
+      }
+
+      .progress-bg,
+      .progress-bar {
+          stroke-width: 4;
+      }
+  }
+
+  @media (max-width: 480px) {
+      .back-to-top {
+          width: 44px;
+          height: 44px;
+      }
+
+      .progress-ring {
+          width: 44px;
+          height: 44px;
+      }
+
+      .progress-bg,
+      .progress-bar {
+          stroke-width: 3;
+      }
+  }
+}
+
+
+/* Optional global smooth scroll (statt im <body>-Style) */
+html {
+  scroll-behavior: smooth;
+}
+
+@layer components {
+    .initial-avatar {
+        @apply text-3xl font-bold text-white;
+    }
+}
