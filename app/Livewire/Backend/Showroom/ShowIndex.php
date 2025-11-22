@@ -5,6 +5,7 @@ namespace App\Livewire\Backend\Showroom;
 use Livewire\Component;
 use App\Models\ShowroomImage;
 use Livewire\WithFileUploads;
+use App\Services\ImageService;
 
 class ShowIndex extends Component
 {
@@ -45,51 +46,55 @@ class ShowIndex extends Component
         $this->reset(['title','subtitle','image','sort_order','editId','existingImage']);
     }
 
-    public function save()
-    {
-        if ($this->editId) {
-            return $this->update();
-        }
-
-        // CREATE
-        $this->validate(array_merge($this->rules, [
-            'image' => 'required|image',
-        ]));
-
-        $path = $this->image->store('showroom', 'public');
-
-        ShowroomImage::create([
-            'title' => $this->title,
-            'subtitle' => $this->subtitle,
-            'image' => $path,
-            'sort_order' => $this->sort_order,
-        ]);
-
-        $this->cancelEdit();
-        session()->flash('success', 'Showroom-Bild wurde erfolgreich hinzugefügt.');
+public function save()
+{
+    if ($this->editId) {
+        return $this->update();
     }
 
-    public function update()
-    {
-        $item = ShowroomImage::findOrFail($this->editId);
+    $this->validate(array_merge($this->rules, [
+        'image' => 'required|image',
+    ]));
 
-        $this->validate($this->rules);
+    $service = new ImageService();
+    $paths = $service->uploadShowroomImage($this->image, $this->title);
 
-        // Bild optional ersetzen
-        if ($this->image) {
-            $this->validate(['image' => 'image']);
-            $path = $this->image->store('showroom', 'public');
-            $item->image = $path;
-        }
+    ShowroomImage::create([
+        'title' => $this->title,
+        'subtitle' => $this->subtitle,
+        'image' => $paths['lg'], // Standardanzeige
+        'sort_order' => $this->sort_order,
+    ]);
 
-        $item->title = $this->title;
-        $item->subtitle = $this->subtitle;
-        $item->sort_order = $this->sort_order;
-        $item->save();
+    $this->cancelEdit();
+    session()->flash('success', 'Showroom-Bild wurde erfolgreich hinzugefügt.');
+}
 
-        $this->cancelEdit();
-        session()->flash('success', 'Showroom-Bild wurde aktualisiert.');
+
+public function update()
+{
+    $item = ShowroomImage::findOrFail($this->editId);
+
+    $this->validate($this->rules);
+
+    if ($this->image) {
+        $this->validate(['image' => 'image']);
+
+        $service = new ImageService();
+        $paths = $service->uploadShowroomImage($this->image, $this->title);
+
+        $item->image = $paths['lg'];
     }
+
+    $item->title = $this->title;
+    $item->subtitle = $this->subtitle;
+    $item->sort_order = $this->sort_order;
+    $item->save();
+
+    $this->cancelEdit();
+    session()->flash('success', 'Showroom-Bild wurde aktualisiert.');
+}
+
 
     public function delete($id)
     {

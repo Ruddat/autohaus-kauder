@@ -12,6 +12,83 @@
 
 <body class="bg-[#0f0f0f] text-white">
 
+@php
+    $special = next_exception_with_note_from_any();
+
+    if ($special) {
+        // Farben je Bereich
+        $bgColor = $special->department === 'sales'
+            ? 'bg-gradient-to-r from-[#B91C1C] to-[#8B0000]'
+            : 'bg-gradient-to-r from-[#FACC15] to-[#EAB308]';
+
+        // Icon anhand Text
+        $text = strtolower($special->note);
+
+        if (str_contains($text, 'geschlossen')) {
+            $icon = 'fa-lock';
+        } elseif (str_contains($text, 'verkürzt') || str_contains($text, 'nur bis') || str_contains($text, 'kurz')) {
+            $icon = 'fa-clock';
+        } elseif (str_contains($text, 'ab')) {
+            $icon = 'fa-ban';
+        } else {
+            $icon = 'fa-bullhorn';
+        }
+
+        $headline = $special->department === 'sales'
+            ? 'Verkauf – Sonderhinweis'
+            : 'Werkstatt – Sonderhinweis';
+
+        $date = \Carbon\Carbon::parse($special->date)->translatedFormat('d. F Y');
+        $msg = "$headline • $date • $special->note";
+    }
+@endphp
+
+
+@if($special)
+    <div class="{{ $bgColor }} text-white py-3 border-b border-black/30 shadow-lg">
+
+        <div class="marquee-container">
+            <div class="marquee-track text-lg font-semibold tracking-wide flex items-center space-x-4">
+
+                <i class="fas {{ $icon }} text-xl"></i>
+
+                <span>{{ $msg }}</span>
+
+                <i class="fas {{ $icon }} text-xl"></i>
+
+                {{-- Nachricht wiederholen, damit der Loop smooth wird --}}
+                <span class="ml-10">{{ $msg }}</span>
+                <span class="ml-10">{{ $msg }}</span>
+
+            </div>
+        </div>
+
+    </div>
+@endif
+
+
+
+<style>
+.marquee-container {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+}
+
+.marquee-track {
+    display: inline-block;
+    white-space: nowrap;
+    padding-left: 100%;
+    animation: marquee-scroll 18s linear infinite;
+}
+
+@keyframes marquee-scroll {
+    from { transform: translateX(0%); }
+    to   { transform: translateX(-100%); }
+}
+</style>
+
+
     @include('components.navigation')
 
     <main>

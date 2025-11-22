@@ -104,17 +104,74 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-start">
-                                    <div class="bg-[#2D2D2D] p-3 rounded-lg mr-4">
-                                        <i class="fas fa-clock text-[#B91C1C]"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold">Öffnungszeiten</h4>
-                                        <p class="text-[#BFBFBF]">
-                                            {{ nl2br(e(Settings::get('contact.opening_hours'))) }}
-                                          </p>
-                                    </div>
-                                </div>
+@php
+    $sales = opening_week_grouped('sales');
+    $work = opening_week_grouped('workshop');
+@endphp
+
+<div class="flex items-start">
+    <div class="bg-[#2D2D2D] p-3 rounded-lg mr-4">
+        <i class="fas fa-clock text-[#B91C1C]"></i>
+    </div>
+
+    <div>
+        <h4 class="font-bold mb-2">Öffnungszeiten – Verkauf</h4>
+        <p class="text-[#BFBFBF] leading-5">
+            @foreach($sales as $row)
+                <strong>
+                    {{-- Von - Bis Tag --}}
+                    @php
+                        $from = short_day($row['from']);
+                        $to = short_day($row['to']);
+                    @endphp
+
+                    @if($from === $to)
+                        {{ $from }}:
+                    @else
+                        {{ $from }}–{{ $to }}:
+                    @endif
+                </strong>
+
+                {{-- Uhrzeit oder geschlossen --}}
+                @if($row['time'] === 'closed')
+                    <span class="text-red-400">geschlossen</span>
+                @else
+                    {{ $row['time'] }}
+                @endif
+
+                <br>
+            @endforeach
+        </p>
+
+        <h4 class="font-bold mt-4 mb-2">Öffnungszeiten – Werkstatt</h4>
+        <p class="text-[#BFBFBF] leading-5">
+            @foreach($work as $row)
+                <strong>
+                    @php
+                        $from = short_day($row['from']);
+                        $to = short_day($row['to']);
+                    @endphp
+
+                    @if($from === $to)
+                        {{ $from }}:
+                    @else
+                        {{ $from }}–{{ $to }}:
+                    @endif
+                </strong>
+
+                @if($row['time'] === 'closed')
+                    <span class="text-red-400">geschlossen</span>
+                @else
+                    {{ $row['time'] }}
+                @endif
+
+                <br>
+            @endforeach
+        </p>
+    </div>
+</div>
+
+
                             </div>
 
                             <div class="mt-8 pt-6 border-t border-[#333]">

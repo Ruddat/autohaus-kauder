@@ -39,6 +39,9 @@ Route::get('backend/service', \App\Http\Controllers\Backend\ServiceController::c
 Route::get('backend/settings', \App\Http\Controllers\Backend\SettingsController::class)
     ->name('backend.settings');
 
+    Route::get('/settings/opening-hours', \App\Livewire\Backend\Settings\OpeningSettings::class)
+        ->name('backend.settings.opening-hours');
+
 
     Route::get('/backend/test', function() {
     return "BACKEND ROUTES ARE ACTIVE";

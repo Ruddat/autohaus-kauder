@@ -35,10 +35,13 @@ class Form extends Component
     // Hauptbild Auswahl (existing)
     public $main_image_id = null;   // ID aus vehicle_images
 
+public $brand_id;
+
+
     protected function rules()
     {
         return [
-            'brand' => 'required|string|max:255',
+               'brand_id' => 'required|exists:vehicle_brands,id',
             'model' => 'required|string|max:255',
             'year'  => 'required|integer|min:1900|max:' . now()->year,
             'km'    => 'required|integer|min:0',
@@ -78,6 +81,8 @@ dd($this->vehicle);
         // Features
         $this->features = $this->vehicle->features()->pluck('name')->toArray();
         $this->features_input = implode(', ', $this->features);
+
+        $this->brand_id = $this->vehicle->brand_id;
 
         // Main Image
         $this->main_image_id = optional($this->vehicle->mainImage)->id;
@@ -134,7 +139,7 @@ dd($this->vehicle);
         }
 
         $data = [
-            'brand' => $this->brand,
+            'brand_id' => $this->brand_id,
             'model' => $this->model,
             'slug'  => $slug,
             'year'  => $this->year,
@@ -220,9 +225,8 @@ dd($this->vehicle);
 public function render()
 {
     return view('livewire.backend.vehicles.form', [
-        'existingImages' => $this->vehicle
-            ? $this->vehicle->images()->get()
-            : collect(),
+        'existingImages' => $this->vehicle ? $this->vehicle->images()->get() : collect(),
+        'brands' => \App\Models\VehicleBrand::orderBy('name')->get(),
     ])
         ->extends('backend.layout.app')             // WICHTIG für @yield
         ->section('content')                        // WICHTIG für @yield

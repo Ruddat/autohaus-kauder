@@ -11,42 +11,106 @@
         </div>
     </section>
 
-<!-- Filter & Sort Section -->
-<section class="py-8 bg-[#0f0f0f] border-b border-[#333]">
+<!-- Filter-Leiste -->
+<section class="py-6 bg-[#0f0f0f] border-b border-[#333]">
     <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
 
-            <!-- Filter Buttons -->
-            <div class="flex flex-wrap gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
 
-                @foreach (['Alle Marken','Mercedes','Audi','BMW','Lexus'] as $b)
-                    <button
-                        wire:click="setBrand('{{ $b }}')"
-                        class="filter-btn
-                            {{ $brand === $b ? 'active bg-gradient-to-r from-[#B91C1C] to-[#8B0000] text-white' : 'bg-[#2D2D2D] text-white' }}
-                            hover:bg-[#BFBFBF] hover:text-[#1E1E1E] px-4 py-2 rounded-lg transition text-sm font-medium"
-                    >
-                        {{ $b }}
-                    </button>
-                @endforeach
-
-            </div>
-
-            <!-- Sort Options -->
-            <div class="flex items-center gap-4">
-                <span class="text-sm text-[#BFBFBF]">Sortieren nach:</span>
-
-                <select wire:model="sort"
-                    class="bg-[#2D2D2D] border border-[#444] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-                    <option value="price_asc">Preis: Niedrig zu Hoch</option>
-                    <option value="price_desc">Preis: Hoch zu Niedrig</option>
-                    <option value="year_desc">Jahr: Neu zu Alt</option>
-                    <option value="year_asc">Jahr: Alt zu Neu</option>
-                    <option value="brand_asc">Marke: A-Z</option>
+            <!-- Marke -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">Marke</label>
+                <select wire:model.live="brand_id"
+                        class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+                    <option value="">Alle Marken</option>
+                    @foreach($brands as $b)
+                        <option value="{{ $b->id }}">{{ $b->name }}</option>
+                    @endforeach
                 </select>
             </div>
 
+            <!-- Modell -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">Modell</label>
+                <select wire:model.live="model"
+                        class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+                    <option value="">Alle Modelle</option>
+
+                    @foreach($models as $m)
+                        <option value="{{ $m }}">{{ $m }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Preis von -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">Preis von (€)</label>
+                <input type="number" wire:model.live="price_from"
+                       class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+            </div>
+
+            <!-- Preis bis -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">Preis bis (€)</label>
+                <input type="number" wire:model.live="price_to"
+                       class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+            </div>
+
+            <!-- Sortierung -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">Sortieren</label>
+                <select wire:model.live="sort"
+                        class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+                    <option value="price_asc">Preis ↑</option>
+                    <option value="price_desc">Preis ↓</option>
+                    <option value="year_desc">Jahr neu → alt</option>
+                    <option value="year_asc">Jahr alt → neu</option>
+                    <option value="km_asc">km ↑</option>
+                    <option value="km_desc">km ↓</option>
+                </select>
+            </div>
         </div>
+
+        <!-- Zweite Filterreihe -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+
+            <!-- Erstzulassung -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">EZ von</label>
+                <input type="number" wire:model.live="year_from"
+                       class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+            </div>
+
+            <div>
+                <label class="text-xs text-[#BFBFBF]">EZ bis</label>
+                <input type="number" wire:model.live="year_to"
+                       class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+            </div>
+
+            <!-- Kilometer -->
+            <div>
+                <label class="text-xs text-[#BFBFBF]">km von</label>
+                <input type="number" wire:model.live="km_from"
+                       class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+            </div>
+
+            <div>
+                <label class="text-xs text-[#BFBFBF]">km bis</label>
+                <input type="number" wire:model.live="km_to"
+                       class="w-full bg-[#2D2D2D] border border-[#444] text-white px-3 py-2 rounded-lg">
+            </div>
+
+        </div>
+
+        <!-- Reset Button -->
+        <div class="mt-4">
+            <button wire:click="resetFilters"
+                    class="bg-[#2D2D2D] hover:bg-[#BFBFBF] hover:text-[#1E1E1E]
+                           text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-undo mr-1"></i> Filter zurücksetzen
+            </button>
+        </div>
+
     </div>
 </section>
 
@@ -57,58 +121,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
 
 @foreach ($vehicles as $v)
-    <div class="vehicle-card bg-[#1E1E1E] rounded-2xl overflow-hidden border border-[#2D2D2D] hover:border-[#BFBFBF]">
-
-        <div class="h-48 bg-gradient-to-br from-[#1E1E1E] to-[#2D2D2D] flex items-center justify-center relative overflow-hidden">
-
-            @if($v->images->first())
-                <img src="{{ asset('storage/' . $v->images->first()->path) }}"
-                     class="w-full h-full object-cover">
-            @else
-                <div class="text-5xl text-[#BFBFBF] opacity-30">
-                    <i class="fas fa-car"></i>
-                </div>
-            @endif
-
-            @if($v->status === 'verfügbar')
-                <div class="absolute top-4 right-4 bg-[#B91C1C] text-white text-xs font-bold px-2 py-1 rounded">
-                    VERFÜGBAR
-                </div>
-            @elseif($v->status === 'reserviert')
-                <div class="absolute top-4 right-4 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    RESERVIERT
-                </div>
-            @else
-                <div class="absolute top-4 right-4 bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    VERKAUFT
-                </div>
-            @endif
-        </div>
-
-        <div class="p-6">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-bold">{{ $v->brand }} {{ $v->model }}</h3>
-                <span class="text-[#B91C1C] font-bold">{{ $v->year }}</span>
-            </div>
-
-            <p class="text-[#BFBFBF] text-sm mb-4">
-                {{ number_format($v->km, 0, ',', '.') }} km
-            </p>
-
-            <div class="flex justify-between items-center">
-                <span class="text-2xl font-bold">
-                    {{ number_format($v->price, 0, ',', '.') }} €
-                </span>
-
-                <a href="{{ route('vehicles.show', $v->slug) }}"
-                   class="bg-[#2D2D2D] hover:bg-[#BFBFBF] hover:text-[#1E1E1E]
-                   text-white px-4 py-2 rounded-lg transition text-sm font-medium">
-                    Details
-                </a>
-            </div>
-        </div>
-
-    </div>
+    <x-vehicle-card :v="$v" />
 @endforeach
 
 

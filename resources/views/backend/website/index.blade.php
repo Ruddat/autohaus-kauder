@@ -80,6 +80,20 @@
             </p>
         </a>
 
+<!-- Öffnungszeiten -->
+<a href="{{ route('backend.settings.opening-hours') }}"
+   class="glass-effect p-8 rounded-2xl border border-[#333] hover:scale-[1.04] transition-all duration-300 block shadow-lg">
+    <div class="flex items-center mb-6">
+        <i class="fas fa-clock text-4xl text-[#B91C1C] mr-4"></i>
+        <h3 class="text-2xl font-bold">Öffnungszeiten</h3>
+    </div>
+    <p class="text-[#BFBFBF] text-sm">
+        Verkauf, Werkstatt & Sonderöffnungszeiten zentral verwalten.
+    </p>
+</a>
+
+
+
     </div>
 
 </div>

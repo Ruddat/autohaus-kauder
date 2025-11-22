@@ -27,9 +27,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="text-sm text-[#BFBFBF]">Marke *</label>
-                    <input type="text" wire:model.live="brand"
-                           class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
-                    @error('brand') <div class="text-red-400 text-xs mt-1">{{ $message }}</div> @enderror
+<select wire:model.live="brand_id"
+        class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+    <option value="">– Marke wählen –</option>
+    @foreach($brands as $brand)
+        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+    @endforeach
+</select>
+@error('brand_id') <div class="text-red-400 text-xs mt-1">{{ $message }}</div> @enderror
                 </div>
                 <div>
                     <label class="text-sm text-[#BFBFBF]">Modell *</label>

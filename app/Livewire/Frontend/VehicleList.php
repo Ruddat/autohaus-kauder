@@ -4,60 +4,124 @@ namespace App\Livewire\Frontend;
 
 use Livewire\Component;
 use App\Models\Vehicle;
+use App\Models\VehicleBrand;
 
 class VehicleList extends Component
 {
-    public $brand = 'Alle Marken';
+    public $brand_id = null;
+    public $model = null;
+
+    public $price_from = null;
+    public $price_to = null;
+
+    public $year_from = null;
+    public $year_to = null;
+
+    public $km_from = null;
+    public $km_to = null;
+
     public $sort = 'price_asc';
 
-    public function setBrand($brand)
+    public $models = []; // dynamische Modelle pro Marke
+
+    public function updatedBrandId()
     {
-        $this->brand = $brand;
+        // Reset Modell & Modelle laden
+        $this->model = null;
+
+        $this->models = Vehicle::where('brand_id', $this->brand_id)
+            ->select('model')
+            ->distinct()
+            ->orderBy('model')
+            ->pluck('model')
+            ->toArray();
     }
 
-    public function updatedSort()
+    public function resetFilters()
     {
-        // automatisch neu rendern reicht
+        $this->brand_id = null;
+        $this->model = null;
+        $this->price_from = null;
+        $this->price_to = null;
+        $this->year_from = null;
+        $this->year_to = null;
+        $this->km_from = null;
+        $this->km_to = null;
+        $this->sort = 'price_asc';
     }
 
     public function render()
     {
-        // Grund-Query
-        $query = Vehicle::query();
+        $brands = VehicleBrand::whereHas('vehicles')
+            ->orderBy('name')
+            ->get();
 
-        // Filter nach Marke
-        if ($this->brand !== 'Alle Marken') {
-            $query->where('brand', $this->brand);
+
+            $query = Vehicle::query()->with(['brandRef', 'images', 'features']);
+
+            // Marke
+        if ($this->brand_id) {
+            $query->where('brand_id', $this->brand_id);
+        }
+
+        // Modell
+        if ($this->model) {
+            $query->where('model', $this->model);
+        }
+
+        // Preis
+        if ($this->price_from) {
+            $query->where('price', '>=', $this->price_from);
+        }
+        if ($this->price_to) {
+            $query->where('price', '<=', $this->price_to);
+        }
+
+        // Erstzulassung
+        if ($this->year_from) {
+            $query->where('year', '>=', $this->year_from);
+        }
+        if ($this->year_to) {
+            $query->where('year', '<=', $this->year_to);
+        }
+
+        // Kilometer
+        if ($this->km_from) {
+            $query->where('km', '>=', $this->km_from);
+        }
+        if ($this->km_to) {
+            $query->where('km', '<=', $this->km_to);
         }
 
         // Sortierung
         switch ($this->sort) {
-            case 'price_asc':
-                $query->orderBy('price', 'asc');
-                break;
-
             case 'price_desc':
                 $query->orderBy('price', 'desc');
                 break;
-
             case 'year_desc':
                 $query->orderBy('year', 'desc');
                 break;
-
             case 'year_asc':
                 $query->orderBy('year', 'asc');
                 break;
-
-            case 'brand_asc':
-                $query->orderBy('brand', 'asc');
+            case 'km_asc':
+                $query->orderBy('km', 'asc');
+                break;
+            case 'km_desc':
+                $query->orderBy('km', 'desc');
+                break;
+            case 'price_asc':
+            default:
+                $query->orderBy('price', 'asc');
                 break;
         }
 
-        // Fahrzeuge laden (inkl. 1 Bild)
-        $vehicles = $query->with('images')->limit(40)->get();
+        $vehicles = $query->paginate(20);
 
         return view('livewire.frontend.vehicle-list', [
-            'vehicles' => $vehicles
+            'vehicles' => $vehicles,
+            'brands' => $brands,
+            'models' => $this->models,
         ]);
     }
 }

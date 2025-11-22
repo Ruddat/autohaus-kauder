@@ -40,19 +40,61 @@
                             </div>
                         </div>
 
-                        <div class="flex items-start contact-card">
-                            <div class="bg-[#2D2D2D] p-3 rounded-lg mr-4">
-                                <i class="fas fa-clock text-[#B91C1C]"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold">Öffnungszeiten</h4>
-                                <p class="text-[#BFBFBF]">
-                                    Mo-Fr: 8:00 - 18:00<br>
-                                    Sa: 9:00 - 14:00<br>
-                                    So: Geschlossen
-                                </p>
-                            </div>
-                        </div>
+@php
+    $sales = opening_week_grouped('sales');
+    $work = opening_week_grouped('workshop');
+@endphp
+
+<div class="flex items-start contact-card">
+    <div class="bg-[#2D2D2D] p-3 rounded-lg mr-4">
+        <i class="fas fa-clock text-[#B91C1C]"></i>
+    </div>
+
+    <div>
+        <h4 class="font-bold">Öffnungszeiten – Verkauf</h4>
+        <p class="text-[#BFBFBF] leading-6">
+            @foreach($sales as $row)
+                <strong>
+                    @if($row['from'] === $row['to'])
+                        {{ $row['from'] }}:
+                    @else
+                        {{ $row['from'] }}–{{ $row['to'] }}:
+                    @endif
+                </strong>
+
+                @if($row['time'] === 'closed')
+                    <span class="text-red-400">geschlossen</span>
+                @else
+                    {{ $row['time'] }}
+                @endif
+
+                <br>
+            @endforeach
+        </p>
+
+        <h4 class="font-bold mt-6">Öffnungszeiten – Werkstatt</h4>
+        <p class="text-[#BFBFBF] leading-6">
+            @foreach($work as $row)
+                <strong>
+                    @if($row['from'] === $row['to'])
+                        {{ $row['from'] }}:
+                    @else
+                        {{ $row['from'] }}–{{ $row['to'] }}:
+                    @endif
+                </strong>
+
+                @if($row['time'] === 'closed')
+                    <span class="text-red-400">geschlossen</span>
+                @else
+                    {{ $row['time'] }}
+                @endif
+                <br>
+            @endforeach
+        </p>
+    </div>
+</div>
+
+
                     </div>
 
                     <div class="mt-8 pt-6 border-t border-[#333]">

@@ -16,7 +16,9 @@ class Vehicle extends Model
         'fuel',
         'gear',
         'status',
-        'description'
+        'description',
+        'slug',
+
     ];
 
     public function images()
@@ -34,7 +36,19 @@ protected static function booted()
 
 public function features()
 {
-    return $this->belongsToMany(Feature::class, 'vehicle_feature');
+    return $this->belongsToMany(\App\Models\Feature::class, 'vehicle_feature');
 }
+
+public function brandRef()
+{
+    return $this->belongsTo(VehicleBrand::class, 'brand_id');
+}
+
+
+public function isVatDeductible(): bool
+{
+    return $this->price_net !== null && $this->price_net > 0;
+}
+
 
 }

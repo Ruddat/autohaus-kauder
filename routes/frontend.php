@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', \App\Http\Controllers\Frontend\HomeController::class)
     ->name('home');
 
-Route::get('/fahrzeuge', \App\Http\Controllers\Frontend\VehiclePageController::class)
+Route::get('/fahrzeuge/{filter?}', \App\Http\Controllers\Frontend\VehiclePageController::class)
     ->name('vehicles.index');
 
 //Route::get('/fahrzeuge/{vehicle}', \App\Http\Controllers\Frontend\VehicleDetailController::class)

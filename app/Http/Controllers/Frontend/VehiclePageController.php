@@ -7,8 +7,11 @@ use Illuminate\Http\Request;
 
 class VehiclePageController extends Controller
 {
-    public function __invoke()
-    {
-        return view('frontend.vehicles.index');
-    }
+public function __invoke($filter = null)
+{
+    return view('frontend.vehicles.index', [
+        'filter' => $filter
+    ]);
+}
+
 }

@@ -22,9 +22,9 @@ class Settings
         // ==========================
         // CONTACT
         // ==========================
-        ['group' => 'contact', 'key' => 'opening_hours', 'value' =>
-            "Mo–Fr: 09:00–18:00\nSa: 10:00–14:00", 'type' => 'text'
-        ],
+        //['group' => 'contact', 'key' => 'opening_hours', 'value' =>
+       //     "Mo–Fr: 09:00–18:00\nSa: 10:00–14:00", 'type' => 'text'
+       // ],
 
         // ==========================
         // SOCIAL

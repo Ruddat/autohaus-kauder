@@ -67,4 +67,46 @@ class ImageService
 
         return $paths;
     }
+
+public function uploadShowroomImage($file, $title)
+{
+    $seo = $this->makeSeoName($title);
+
+    $sizes = [
+        'xl' => 1920,
+        'lg' => 1400,
+        'md' => 900,
+        'sm' => 450,
+    ];
+
+    $disk = 'public';
+    $folder = 'showroom';
+
+    // Ordner sicherstellen
+    $this->ensureFolderExists($disk, $folder);
+
+    $paths = [];
+
+    // Original einlesen
+    $img = $this->manager->read($file->getRealPath());
+
+    // Original WebP
+    $original = "$folder/{$seo}.webp";
+    Storage::disk($disk)->put($original, $img->toWebp(85));
+    $paths['original'] = $original;
+
+    // Größen erzeugen
+    foreach ($sizes as $key => $width) {
+        $resized = $img->scale(width: $width);
+        $filename = "$folder/{$seo}-{$key}.webp";
+        Storage::disk($disk)->put($filename, $resized->toWebp(85));
+        $paths[$key] = $filename;
+    }
+
+    return $paths;
+}
+
+
+
+
 }

@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
         TimelineEventSeeder::class,
         ShowroomImageSeeder::class,
         ServiceItemSeeder::class,
+        OpeningHoursSeeder::class,
+        VehicleBrandSeeder::class,
     ]);
 
 

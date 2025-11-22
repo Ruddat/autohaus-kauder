@@ -1,6 +1,12 @@
+
+{{--
+
+
 <section class="py-20 bg-[#0f0f0f]">
     @include('frontend.sections.vehicles-inner')
 </section>
+
+--}}
 
 <!-- NEW VEHICLES SECTION -->
 <section class="py-16 bg-[#0f0f0f]">
@@ -18,6 +24,16 @@
         @endforeach
 
         </div>
+                <div class="text-center mt-12">
+<a href="{{ route('vehicles.index', ['filter' => 'new']) }}"
+   class="border-2 border-[#BFBFBF] hover:bg-[#BFBFBF] hover:text-[#1E1E1E] text-white px-8 py-3 rounded-lg font-medium transition-all inline-block">
+    Alle Fahrzeuge anzeigen <i class="fas fa-arrow-right ml-2"></i>
+</a>
+
+
+            </div>
+
+
     </div>
 </section>
 
@@ -38,6 +54,15 @@
         @endforeach
 
         </div>
+
+            <div class="text-center mt-12">
+<a href="{{ route('vehicles.index', ['filter' => 'top']) }}"
+   class="border-2 border-[#BFBFBF] hover:bg-[#BFBFBF] hover:text-[#1E1E1E] text-white px-8 py-3 rounded-lg font-medium transition-all inline-block">
+    Alle Fahrzeuge anzeigen <i class="fas fa-arrow-right ml-2"></i>
+</a>
+            </div>
+
+
     </div>
 </section>
 
@@ -61,5 +86,13 @@
         @endforeach
 
         </div>
+
+            <div class="text-center mt-12">
+<a href="{{ route('vehicles.index', ['filter' => 'hot']) }}"
+   class="border-2 border-[#BFBFBF] hover:bg-[#BFBFBF] hover:text-[#1E1E1E] text-white px-8 py-3 rounded-lg font-medium transition-all inline-block">
+    Alle Fahrzeuge anzeigen <i class="fas fa-arrow-right ml-2"></i>
+</a>
+            </div>
+
     </div>
 </section>
