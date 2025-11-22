@@ -58,11 +58,15 @@
             <input type="file" wire:model="image"
                    class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-4 py-3">
 
-            @if ($existingImage)
-                <p class="text-xs mt-2 text-gray-400">Aktuelles Bild:</p>
-                <img src="{{ asset('storage/' . $existingImage) }}"
-                     class="h-24 rounded-lg mt-1 border border-[#333] object-cover">
-            @endif
+@if ($image)
+    <p class="text-xs mt-2 text-gray-400">Neue Vorschau:</p>
+    <img src="{{ $image->temporaryUrl() }}"
+         class="h-24 rounded-lg mt-1 border border-[#333] object-cover">
+@elseif ($existingImage)
+    <p class="text-xs mt-2 text-gray-400">Aktuelles Bild:</p>
+    <img src="{{ asset('storage/' . $existingImage) }}"
+         class="h-24 rounded-lg mt-1 border border-[#333] object-cover">
+@endif
         </div>
 
     </div>
