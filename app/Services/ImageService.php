@@ -20,6 +20,13 @@ class ImageService
         return Str::slug($name) . '-' . time();
     }
 
+    public function ensureFolderExists($disk, $folder)
+    {
+        if (!Storage::disk($disk)->exists($folder)) {
+            Storage::disk($disk)->makeDirectory($folder);
+        }
+    }
+
     public function uploadTeamImage($file, $name)
     {
         $seo = $this->makeSeoName($name);
@@ -32,6 +39,9 @@ class ImageService
 
         $disk = 'public';
         $folder = 'team';
+
+        // 🔥 WICHTIG: Ordner sicherstellen
+        $this->ensureFolderExists($disk, $folder);
 
         $paths = [];
 
@@ -49,7 +59,7 @@ class ImageService
             $paths[$key] = $filename;
         }
 
-        // Quadratischer Avatar für Team (200x200)
+        // Quadratischer Avatar
         $crop = $img->cover(200, 200);
         $cropName = "$folder/{$seo}-avatar.webp";
         Storage::disk($disk)->put($cropName, $crop->toWebp(85));
