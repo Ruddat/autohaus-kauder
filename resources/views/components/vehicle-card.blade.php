@@ -3,15 +3,15 @@
     <!-- IMAGE -->
     <div class="h-48 bg-gradient-to-br from-[#1E1E1E] to-[#2D2D2D] flex items-center justify-center relative overflow-hidden">
 
-        @if($v->images->first())
-            <img src="{{ asset('storage/' . $v->images->first()->path) }}"
-alt="{{ $v->brandRef->name ?? 'Marke unbekannt' }} {{ $v->model }}"
-                 class="w-full h-full object-cover transition duration-300 hover:scale-105">
-        @else
-            <div class="text-5xl text-[#BFBFBF] opacity-30">
-                <i class="fas fa-car"></i>
-            </div>
-        @endif
+@if($v->images->first())
+    <img src="{{ asset('storage/' . ($v->images->first()->thumb ?? $v->images->first()->hero ?? $v->images->first()->path)) }}"
+         alt="{{ $v->brandRef->name ?? 'Marke unbekannt' }} {{ $v->model }}"
+         class="w-full h-full object-cover transition duration-300 hover:scale-105">
+@else
+    <div class="text-5xl text-[#BFBFBF] opacity-30">
+        <i class="fas fa-car"></i>
+    </div>
+@endif
 
 <!-- Wishlist Heart -->
 <livewire:wishlist :v="$v" :wire:key="'wishlist-'.$v->id" />
@@ -31,11 +31,19 @@ alt="{{ $v->brandRef->name ?? 'Marke unbekannt' }} {{ $v->model }}"
             </div>
         @endif
 
-        @if($v->badge)
-            <div class="absolute top-3 left-3 bg-[#2D2D2D] text-white text-xs font-bold px-2 py-1 rounded border border-[#444]">
-                {{ strtoupper($v->badge) }}
-            </div>
-        @endif
+{{-- Neues System (badge_id + Badge Model) --}}
+@if($v->badge)
+    <div class="absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded border"
+         style="
+            background: {{ $v->badge->color }};
+            color: {{ $v->badge->text_color }};
+            border-color: {{ $v->badge->text_color }}33;
+         ">
+        {{ strtoupper($v->badge->label) }}
+    </div>
+@endif
+
+
 
     </div>
 
@@ -63,8 +71,18 @@ alt="{{ $v->brandRef->name ?? 'Marke unbekannt' }} {{ $v->model }}"
 
 <p class="text-[#BFBFBF] text-sm mb-2">
     {{ number_format($v->km, 0, ',', '.') }} km •
-    {{ $v->fuel }} •
-    {{ $v->gear }}
+
+    @if($v->fuelType)
+        {{ $v->fuelType->name }} •
+    @else
+        -
+    @endif
+
+    @if($v->transmission)
+        {{ $v->transmission->name }}
+    @else
+        -
+    @endif
 </p>
 
 <!-- HIGHLIGHTS -->

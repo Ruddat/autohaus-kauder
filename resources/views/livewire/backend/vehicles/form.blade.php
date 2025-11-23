@@ -83,30 +83,54 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="text-sm text-[#BFBFBF]">Kraftstoff *</label>
-                    <input type="text" wire:model="fuel"
-                           placeholder="Benzin / Diesel / Hybrid / Elektro"
-                           class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
-                    @error('fuel') <div class="text-red-400 text-xs mt-1">{{ $message }}</div> @enderror
-                </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                <div>
-                    <label class="text-sm text-[#BFBFBF]">Getriebe *</label>
-                    <input type="text" wire:model="gear"
-                           placeholder="Automatik / Schalter"
-                           class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
-                    @error('gear') <div class="text-red-400 text-xs mt-1">{{ $message }}</div> @enderror
-                </div>
+    {{-- Kraftstoff --}}
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Kraftstoff *</label>
+        <select wire:model="fuel_type_id"
+                class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2 text-white">
+            <option value="">– Bitte wählen –</option>
+            @foreach(\App\Models\FuelType::orderBy('name')->get() as $item)
+                <option value="{{ $item->id }}">{{ $item->name }}</option>
+            @endforeach
+        </select>
+        @error('fuel_type_id')
+            <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+        @enderror
+    </div>
 
-                <div>
-                    <label class="text-sm text-[#BFBFBF]">Antrieb</label>
-                    <input type="text" wire:model="drive"
-                           placeholder="4MATIC / Front / RWD"
-                           class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
-                </div>
-            </div>
+    {{-- Getriebe --}}
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Getriebe *</label>
+        <select wire:model="transmission_id"
+                class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2 text-white">
+            <option value="">– Bitte wählen –</option>
+            @foreach(\App\Models\Transmission::orderBy('name')->get() as $item)
+                <option value="{{ $item->id }}">{{ $item->name }}</option>
+            @endforeach
+        </select>
+        @error('transmission_id')
+            <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+
+    {{-- Antrieb (bleibt erstmal Text oder später auch Select) --}}
+<div>
+    <label class="text-sm text-[#BFBFBF]">Antrieb *</label>
+    <select wire:model="drive_id"
+            class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2 text-white">
+        <option value="">– Bitte wählen –</option>
+        @foreach(\App\Models\Drive::orderBy('name')->get() as $item)
+            <option value="{{ $item->id }}">{{ $item->name }}</option>
+        @endforeach
+    </select>
+    @error('drive_id')
+        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+    @enderror
+</div>
+
+</div>
 
             {{-- Ausstattungs-Tags --}}
             <div>
@@ -149,11 +173,20 @@
                 @error('status') <div class="text-red-400 text-xs mt-1">{{ $message }}</div> @enderror
             </div>
 
-            <div>
-                <label class="text-sm text-[#BFBFBF]">Badge</label>
-                <input type="text" wire:model="badge" placeholder="TOP / NEU / SALE"
-                       class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
-            </div>
+<div>
+    <label class="text-sm text-[#BFBFBF]">Badge</label>
+    <select wire:model="badge_id"
+            class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2 text-white">
+        <option value="">– Kein Badge –</option>
+        @foreach(\App\Models\Badge::where('active', true)->orderBy('sort_order')->get() as $item)
+            <option value="{{ $item->id }}">{{ $item->label }}</option>
+        @endforeach
+    </select>
+
+    @error('badge_id')
+        <div class="text-red-400 text-xs mt-1">{{ $message }}</div>
+    @enderror
+</div>
 
             <div>
                 <label class="text-sm text-[#BFBFBF]">Fahrzeugnummer</label>
@@ -212,6 +245,33 @@
                     <p class="text-xs text-[#BFBFBF] mt-2">Klicke ein Bild, um es als Hauptbild zu setzen.</p>
                 </div>
             @endif
+
+@foreach($existingImages as $img)
+    <div class="relative border rounded-lg overflow-hidden
+        {{ $main_image_id == $img->id ? 'border-[#B91C1C]' : 'border-[#444]' }}">
+
+        <img src="{{ Storage::url($img->path) }}"
+             class="h-24 w-full object-cover cursor-pointer"
+             wire:click="setMainImage({{ $img->id }})">
+
+        {{-- DELETE BUTTON --}}
+        <button type="button"
+                wire:click="deleteImage({{ $img->id }})"
+                class="absolute top-1 right-1 bg-black/60 text-white
+                       px-2 py-1 rounded-full text-xs hover:bg-black">
+            ✕
+        </button>
+
+        @if($main_image_id == $img->id)
+            <span class="absolute bottom-1 left-1 text-xs bg-[#B91C1C] px-2 py-0.5 rounded">
+                Hauptbild
+            </span>
+        @endif
+    </div>
+@endforeach
+
+
+
 
         </div>
     </div>

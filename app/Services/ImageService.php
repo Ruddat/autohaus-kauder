@@ -106,6 +106,47 @@ public function uploadShowroomImage($file, $title)
     return $paths;
 }
 
+public function uploadVehicleImage($file, $vehicleId, $title = null)
+{
+    $seo = $this->makeSeoName($title ?: 'vehicle-' . $vehicleId);
+
+    $disk = 'public';
+    $folder = "vehicles/{$vehicleId}";
+
+    // Ordner sicherstellen
+    $this->ensureFolderExists($disk, $folder);
+
+    $paths = [];
+
+    // Original lesen
+    $img = $this->manager->read($file->getRealPath());
+
+    // ORIGINAL
+    $original = "$folder/{$seo}.webp";
+    Storage::disk($disk)->put($original, $img->toWebp(85));
+    $paths['original'] = $original;
+
+    // HERO (16:9)
+    $hero = $img->cover(1600, 900);
+    $heroName = "$folder/{$seo}-hero.webp";
+    Storage::disk($disk)->put($heroName, $hero->toWebp(85));
+    $paths['hero'] = $heroName;
+
+    // NORMAL (4:3)
+    $normal = $img->cover(1200, 900);
+    $normalName = "$folder/{$seo}-normal.webp";
+    Storage::disk($disk)->put($normalName, $normal->toWebp(85));
+    $paths['normal'] = $normalName;
+
+    // THUMB (klein)
+    $thumb = $img->cover(600, 400);
+    $thumbName = "$folder/{$seo}-thumb.webp";
+    Storage::disk($disk)->put($thumbName, $thumb->toWebp(85));
+    $paths['thumb'] = $thumbName;
+
+    return $paths;
+}
+
 
 
 

@@ -8,7 +8,13 @@ class VehicleImage extends Model
 {
     protected $fillable = [
         'vehicle_id',
-        'path'
+        'path',
+        'original',
+        'hero',
+        'normal',
+        'thumb',
+        'is_main',
+        'sort_order',
     ];
 
     public function vehicle()

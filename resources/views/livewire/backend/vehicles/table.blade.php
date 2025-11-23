@@ -15,9 +15,22 @@
             <tr class="border-b border-[#333] hover:bg-[#2D2D2D]/50">
                 <td class="py-3 px-4">
                     <div class="flex items-center">
-                        <div class="w-12 h-12 bg-[#2D2D2D] rounded-lg flex items-center justify-center mr-4">
-                            <i class="fas fa-car text-[#BFBFBF]"></i>
-                        </div>
+<div class="w-12 h-12 rounded-lg overflow-hidden bg-[#2D2D2D] mr-4 flex items-center justify-center">
+
+    @php
+        $thumb = $vehicle->images->first()?->thumb
+            ?? $vehicle->images->first()?->hero
+            ?? $vehicle->images->first()?->path;
+    @endphp
+
+    @if($thumb)
+        <img src="{{ Storage::url($thumb) }}"
+             class="w-full h-full object-cover">
+    @else
+        <i class="fas fa-car text-[#BFBFBF] text-xl"></i>
+    @endif
+
+</div>
                         <div>
                             <div class="font-medium">{{ $vehicle->brand }} {{ $vehicle->model }}</div>
                             <div class="text-xs text-[#BFBFBF]">{{ $vehicle->year }} • {{ $vehicle->km }} km</div>

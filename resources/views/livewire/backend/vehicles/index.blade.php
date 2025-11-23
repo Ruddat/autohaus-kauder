@@ -42,10 +42,37 @@
             <tbody>
             @forelse($vehicles as $v)
                 <tr class="border-t border-[#333] hover:bg-[#2D2D2D]/50">
-                    <td class="p-3">
-                        <div class="font-semibold">{{ $v->brand }} {{ $v->model }}</div>
-                        <div class="text-xs text-[#BFBFBF]">{{ $v->year }} • {{ number_format($v->km) }} km</div>
-                    </td>
+<td class="p-3">
+    <div class="flex items-center gap-3">
+
+        {{-- THUMBNAIL --}}
+        <div class="w-12 h-12 rounded-lg overflow-hidden bg-[#2D2D2D] flex items-center justify-center">
+
+            @php
+                $thumb = $v->images->first()?->thumb
+                    ?? $v->images->first()?->hero
+                    ?? $v->images->first()?->path;
+            @endphp
+
+            @if($thumb)
+                <img src="{{ Storage::url($thumb) }}" class="w-full h-full object-cover">
+            @else
+                <i class="fas fa-car text-[#BFBFBF] text-xl"></i>
+            @endif
+
+        </div>
+
+        {{-- TEXT --}}
+        <div>
+            <div class="font-semibold">{{ $v->brandRef->name ?? 'Unbekannt' }} {{ $v->model }}</div>
+            <div class="text-xs text-[#BFBFBF]">
+                {{ $v->year }} • {{ number_format($v->km, 0, ',', '.') }} km
+            </div>
+        </div>
+
+    </div>
+</td>
+
 
                     <td class="p-3 font-bold">
                         € {{ number_format($v->price, 0, ',', '.') }}

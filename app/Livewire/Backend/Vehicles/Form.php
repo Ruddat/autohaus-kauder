@@ -2,12 +2,19 @@
 
 namespace App\Livewire\Backend\Vehicles;
 
+use App\Models\Badge;
+use App\Models\Drive;
 use App\Models\Vehicle;
 use Livewire\Component;
+use App\Models\FuelType;
 use Illuminate\Support\Str;
+use App\Models\Transmission;
+use App\Models\VehicleBrand;
 use App\Models\VehicleImage;
 use Livewire\WithFileUploads;
+use App\Services\ImageService;
 use App\Services\FeatureService;
+use Illuminate\Support\Facades\Storage;
 
 class Form extends Component
 {
@@ -15,92 +22,83 @@ class Form extends Component
 
     public ?Vehicle $vehicle = null;
 
-    // Fahrzeugfelder (matching deiner Migration)
-    public $brand, $model, $slug, $year, $km, $price, $price_net, $vat = 19;
-    public $fuel, $gear, $drive, $power, $hp, $kw, $ccm;
-    public $body_type, $doors, $seats;
-    public $color, $color_code, $interior, $interior_color, $interior_material;
-    public $consumption, $co2;
-    public $vehicle_number, $vin, $badge, $category;
+    // Stammdaten
+    public $brand_id;
+    public $model;
+    public $fuel_type_id;
+    public $transmission_id;
+    public $drive_id;
+    public $badge_id;
+
+    // Fahrzeug-Felder
+    public $slug;
+    public $year;
+    public $km;
+    public $price;
+    public $price_net;
+    public $vat = 19;
     public $status = 'verfügbar';
     public $description;
 
-    // Features (Tagging)
-    public $features_input = '';    // Komma-getrennt
-    public $features = [];          // Array der Strings
+    // Galerie + Hauptbild
+    public $gallery = [];
+    public $main_image_id = null;
 
-    // Galerie Upload
-    public $gallery = [];           // temporäre Uploads (max 30)
-
-    // Hauptbild Auswahl (existing)
-    public $main_image_id = null;   // ID aus vehicle_images
-
-public $brand_id;
-
+    // Features
+    public $features_input = '';
+    public $features = [];
 
     protected function rules()
     {
         return [
-               'brand_id' => 'required|exists:vehicle_brands,id',
+            'brand_id' => 'required|exists:vehicle_brands,id',
             'model' => 'required|string|max:255',
-            'year'  => 'required|integer|min:1900|max:' . now()->year,
-            'km'    => 'required|integer|min:0',
+            'year' => 'required|integer|min:1900|max:' . now()->year,
+            'km' => 'required|integer|min:0',
             'price' => 'required|integer|min:0',
-            'fuel'  => 'required|string|max:100',
-            'gear'  => 'required|string|max:100',
-            'status'=> 'required|in:verfügbar,reserviert,verkauft',
 
-            // optional fields
-            'slug'  => 'nullable|string|max:255',
+            'fuel_type_id' => 'required|exists:fuel_types,id',
+            'transmission_id' => 'required|exists:transmissions,id',
+            'drive_id' => 'nullable|exists:drives,id',
+            'badge_id' => 'nullable|exists:badges,id',
+
+            'status' => 'required|in:verfügbar,reserviert,verkauft',
+
             'description' => 'nullable|string',
 
-            // upload rules
             'gallery' => 'array|max:30',
-            'gallery.*' => 'image|max:8192', // bis 8MB pro Bild
+            'gallery.*' => 'image|max:8192',
         ];
     }
 
-public function mount($vehicle = null)
+public function mount(Vehicle $vehicle = null)
 {
-    if ($vehicle) {
-        $this->vehicle = Vehicle::findOrFail($vehicle);
+    $this->vehicle = $vehicle;
 
-        $this->fill($this->vehicle->only([
-            'brand','model','slug','year','km','price','price_net','vat',
-            'fuel','gear','drive','power','hp','kw','ccm',
-            'body_type','doors','seats',
-            'color','color_code','interior','interior_color','interior_material',
-            'consumption','co2',
-            'vehicle_number','vin','badge','category',
-            'status','description'
+    if ($vehicle) {
+        $this->fill($vehicle->only([
+            'brand_id', 'model', 'slug', 'year', 'km', 'price',
+            'price_net', 'vat', 'status', 'description',
+            'fuel_type_id', 'transmission_id', 'drive_id', 'badge_id'
         ]));
 
-
-dd($this->vehicle);
-
-        // Features
-        $this->features = $this->vehicle->features()->pluck('name')->toArray();
+        $this->features = $vehicle->features()->pluck('name')->toArray();
         $this->features_input = implode(', ', $this->features);
 
-        $this->brand_id = $this->vehicle->brand_id;
-
-        // Main Image
-        $this->main_image_id = optional($this->vehicle->mainImage)->id;
+        $this->main_image_id = optional($vehicle->mainImage)->id;
     }
 }
 
-
     public function updated($field)
     {
-        // Slug live generieren wenn Brand/Model geändert werden
-        if (in_array($field, ['brand', 'model']) && !$this->vehicle) {
-            $this->slug = Str::slug(trim($this->brand.' '.$this->model));
+        if (in_array($field, ['brand_id', 'model']) && !$this->vehicle) {
+            $brandName = optional(VehicleBrand::find($this->brand_id))->name;
+            $this->slug = Str::slug(trim($brandName . ' ' . $this->model));
         }
     }
 
     public function updatedFeaturesInput()
     {
-        // Tags aus dem Input bauen
         $this->features = collect(explode(',', $this->features_input))
             ->map(fn($x) => trim($x))
             ->filter()
@@ -109,67 +107,42 @@ dd($this->vehicle);
             ->toArray();
     }
 
-    public function removeNewImage($index)
-    {
-        unset($this->gallery[$index]);
-        $this->gallery = array_values($this->gallery);
-    }
-
-    public function setMainImage($imageId)
-    {
-        $this->main_image_id = $imageId;
-    }
-
-    public function save()
+    public function save(ImageService $imageService)
     {
         $this->validate();
 
-        // Slug fixieren
-        $slug = $this->slug ?: Str::slug(trim($this->brand.' '.$this->model));
+        // Slug vorbereiten
+        $brandName = optional(VehicleBrand::find($this->brand_id))->name;
+        $slug = $this->slug ?: Str::slug(trim($brandName . ' ' . $this->model));
 
-        // Slug unique machen
-        $slugBase = $slug;
+        $base = $slug;
         $i = 1;
+
         while (
             Vehicle::where('slug', $slug)
-                ->when($this->vehicle, fn($q)=>$q->where('id','!=',$this->vehicle->id))
+                ->when($this->vehicle, fn($q) => $q->where('id', '!=', $this->vehicle->id))
                 ->exists()
         ) {
-            $slug = $slugBase.'-'.$i++;
+            $slug = $base . '-' . $i++;
         }
 
+        // Speicherdaten
         $data = [
             'brand_id' => $this->brand_id,
             'model' => $this->model,
-            'slug'  => $slug,
-            'year'  => $this->year,
-            'km'    => $this->km,
+            'slug' => $slug,
+            'year' => $this->year,
+            'km' => $this->km,
             'price' => $this->price,
             'price_net' => $this->price_net,
             'vat' => $this->vat,
-            'fuel' => $this->fuel,
-            'gear' => $this->gear,
-            'drive' => $this->drive,
-            'power' => $this->power,
-            'hp' => $this->hp,
-            'kw' => $this->kw,
-            'ccm' => $this->ccm,
-            'body_type' => $this->body_type,
-            'doors' => $this->doors,
-            'seats' => $this->seats,
-            'color' => $this->color,
-            'color_code' => $this->color_code,
-            'interior' => $this->interior,
-            'interior_color' => $this->interior_color,
-            'interior_material' => $this->interior_material,
-            'consumption' => $this->consumption,
-            'co2' => $this->co2,
-            'vehicle_number' => $this->vehicle_number,
-            'vin' => $this->vin,
-            'badge' => $this->badge,
-            'category' => $this->category,
             'status' => $this->status,
             'description' => $this->description,
+
+            'fuel_type_id' => $this->fuel_type_id,
+            'transmission_id' => $this->transmission_id,
+            'drive_id' => $this->drive_id,
+            'badge_id' => $this->badge_id,
         ];
 
         $vehicle = $this->vehicle
@@ -178,63 +151,125 @@ dd($this->vehicle);
 
         $this->vehicle = $vehicle;
 
-        // 🔥 Features auto-learning + sync
+        // FEATURES
         FeatureService::syncFeatures($vehicle, $this->features);
 
-        // 🔥 Galerie speichern (bis 30)
+        // BILDER UPLOAD
         if (!empty($this->gallery)) {
-            $nextSort = (int) $vehicle->images()->max('sort_order');
+            $nextSort = (int)($vehicle->images()->max('sort_order') ?? 0);
 
             foreach ($this->gallery as $img) {
-                $path = $img->store("vehicles/{$vehicle->id}", 'public');
+
+                $processed = $imageService->uploadVehicleImage(
+                    $img,
+                    $vehicle->id,
+                    $brandName . ' ' . $this->model
+                );
 
                 $record = VehicleImage::create([
                     'vehicle_id' => $vehicle->id,
-                    'path' => $path,
+                    'path' => $processed['hero'],
+                    'original' => $processed['original'],
+                    'hero' => $processed['hero'],
+                    'normal' => $processed['normal'],
+                    'thumb' => $processed['thumb'],
                     'sort_order' => ++$nextSort,
                     'is_main' => false,
                 ]);
 
-                // wenn noch kein main image gesetzt ist, erstes Bild main machen
                 if (!$vehicle->mainImage) {
                     $record->update(['is_main' => true]);
                     $this->main_image_id = $record->id;
                 }
             }
 
-            // temp uploads leeren
             $this->gallery = [];
+            $vehicle->refresh();
         }
 
-        // 🔥 Hauptbild prüfen/setzen
+        // HAUPTBILD
         if ($this->main_image_id) {
             $vehicle->images()->update(['is_main' => false]);
-            $vehicle->images()->where('id', $this->main_image_id)->update([
-                'is_main' => true
-            ]);
+            $vehicle->images()
+                ->where('id', $this->main_image_id)
+                ->update(['is_main' => true]);
+
+            $main = $vehicle->mainImage;
             $vehicle->update([
-                'main_image' => optional($vehicle->mainImage)->path
+                'main_image' => optional($main)->hero ?: optional($main)->path
             ]);
         }
 
-        session()->flash('success', 'Fahrzeug gespeichert ✅');
+        session()->flash('success', 'Fahrzeug gespeichert ✔️');
 
-        return redirect()->route('backend.vehicles.edit', $vehicle);
+        return redirect()->route('backend.vehicles.index');
     }
 
-public function render()
+
+public function removeNewImage($index) { unset($this->gallery[$index]); $this->gallery = array_values($this->gallery); }
+ public function setMainImage($imageId) { $this->main_image_id = $imageId; }
+
+
+public function deleteImage($imageId)
 {
-    return view('livewire.backend.vehicles.form', [
-        'existingImages' => $this->vehicle ? $this->vehicle->images()->get() : collect(),
-        'brands' => \App\Models\VehicleBrand::orderBy('name')->get(),
-    ])
-        ->extends('backend.layout.app')             // WICHTIG für @yield
-        ->section('content')                        // WICHTIG für @yield
-        ->layoutData([
-            'title' => $this->vehicle
-                ? 'Fahrzeug bearbeiten'
-                : 'Fahrzeug anlegen',
-        ]);
+    $image = VehicleImage::findOrFail($imageId);
+
+    // Physische Dateien löschen
+    if ($image->original && Storage::exists($image->original)) {
+        Storage::delete($image->original);
+    }
+    if ($image->hero && Storage::exists($image->hero)) {
+        Storage::delete($image->hero);
+    }
+    if ($image->normal && Storage::exists($image->normal)) {
+        Storage::delete($image->normal);
+    }
+    if ($image->thumb && Storage::exists($image->thumb)) {
+        Storage::delete($image->thumb);
+    }
+
+    // War es das Hauptbild?
+    $wasMain = $image->is_main;
+
+    // Löschen aus DB
+    $image->delete();
+
+    // Hauptbild neu setzen
+    if ($wasMain) {
+        $newMain = $this->vehicle->images()->orderBy('sort_order')->first();
+        if ($newMain) {
+            $newMain->update(['is_main' => true]);
+            $this->main_image_id = $newMain->id;
+            $this->vehicle->update(['main_image' => $newMain->hero]);
+        } else {
+            // Wenn KEIN Bild mehr vorhanden ist
+            $this->main_image_id = null;
+            $this->vehicle->update(['main_image' => null]);
+        }
+    }
+
+    $this->vehicle->refresh();
 }
 
+
+
+
+    public function render()
+    {
+        return view('livewire.backend.vehicles.form', [
+            'brands' => VehicleBrand::orderBy('name')->get(),
+            'fuelTypes' => FuelType::orderBy('name')->get(),
+            'transmissions' => Transmission::orderBy('name')->get(),
+            'drives' => Drive::orderBy('name')->get(),
+            'badges' => Badge::orderBy('sort_order')->get(),
+            'existingImages' => $this->vehicle ? $this->vehicle->images : collect(),
+        ])
+            ->extends('backend.layout.app')
+            ->section('content')
+            ->layoutData([
+                'title' => $this->vehicle
+                    ? 'Fahrzeug bearbeiten'
+                    : 'Fahrzeug anlegen'
+            ]);
+    }
 }

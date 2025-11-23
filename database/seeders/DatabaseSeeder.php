@@ -30,6 +30,9 @@ class DatabaseSeeder extends Seeder
         ServiceItemSeeder::class,
         OpeningHoursSeeder::class,
         VehicleBrandSeeder::class,
+        FuelTransmissionSeeder::class,
+        DriveSeeder::class,
+        BadgeSeeder::class,
     ]);
 
 

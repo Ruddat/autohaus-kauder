@@ -26,9 +26,9 @@ return new class extends Migration
             $table->integer('vat')->default(19);       // MwSt-Satz
 
             // Antrieb
-            $table->string('fuel');                  // Diesel, Benzin, Hybrid, Elektro
-            $table->string('gear');                  // Automatik / Schaltgetriebe
-            $table->string('drive')->nullable();     // 4MATIC, Frontantrieb, RWD
+            //$table->string('fuel');                  // Diesel, Benzin, Hybrid, Elektro
+            //$table->string('gear');                  // Automatik / Schaltgetriebe
+           // $table->string('drive')->nullable();     // 4MATIC, Frontantrieb, RWD
 
             // Motor
             $table->string('power')->nullable();     // 215 kW (292 PS)
@@ -55,7 +55,7 @@ return new class extends Migration
             // Verwaltung
             $table->string('vehicle_number')->nullable();   // FZ-12345
             $table->string('vin')->nullable();              // FIN (optional)
-            $table->string('badge')->nullable();            // TOP / NEU / SALE
+            // $table->string('badge')->nullable();            // TOP / NEU / SALE
             $table->string('main_image')->nullable();       // schnelles Ladebild
 
             // Kategorien (frei erweiterbar)

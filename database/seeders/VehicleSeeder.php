@@ -4,7 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Vehicle;
 use App\Models\VehicleBrand;
-use App\Models\VehicleImage;
+use App\Models\FuelType;
+use App\Models\Transmission;
+use App\Models\Drive;
+use App\Models\Badge;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -21,11 +24,15 @@ class VehicleSeeder extends Seeder
             'Porsche'       => ['Macan S', 'Cayenne E-Hybrid', 'Panamera 4S', '911 Carrera'],
         ];
 
-        $fuels = ['Benzin', 'Diesel', 'Hybrid', 'Elektro'];
-        $gears = ['Automatik', 'Schaltgetriebe'];
+        // IDs laden
+        $fuelTypes       = FuelType::pluck('id')->toArray();
+        $transmissions   = Transmission::pluck('id')->toArray();
+        $drives          = Drive::pluck('id')->toArray();
+        $badges          = Badge::pluck('id')->toArray();
+
         $statuses = ['verfügbar', 'reserviert', 'verkauft'];
 
-        // 1️⃣ Brands vorbereiten (nur einmal anlegen)
+        // Brands erzeugen
         foreach ($brandsWithModels as $brandName => $models) {
             VehicleBrand::firstOrCreate(
                 ['slug' => Str::slug($brandName)],
@@ -33,41 +40,35 @@ class VehicleSeeder extends Seeder
             );
         }
 
-        // 2️⃣ Fahrzeuge generieren
+        // Fahrzeuge generieren
         for ($i = 0; $i < 30; $i++) {
 
-            // zufällige Marke wählen
+            // zufällige Marke
             $brandName = array_rand($brandsWithModels);
-            $brand = VehicleBrand::where('name', $brandName)->first();
+            $brand     = VehicleBrand::where('name', $brandName)->first();
 
-            // zufälliges Modell zuweisen
+            // Modell wählen
             $model = $brandsWithModels[$brandName][array_rand($brandsWithModels[$brandName])];
 
             $slug = Str::slug($brandName . '-' . $model . '-' . $i);
 
-            $vehicle = Vehicle::create([
-                'brand_id'    => $brand->id,
-                'model'       => $model,
-                'slug'        => $slug,
-                'year'        => rand(2017, 2024),
-                'km'          => rand(5000, 180000),
-                'price'       => rand(18000, 120000),
-                'fuel'        => $fuels[array_rand($fuels)],
-                'gear'        => $gears[array_rand($gears)],
-                'status'      => $statuses[array_rand($statuses)],
-                'description' => fake()->paragraph(4),
-                'badge'       => fake()->randomElement([null, 'TOP', 'NEU', 'SALE', 'ANGEBOT']),
+            // Fahrzeug OHNE BILDER speichern
+            Vehicle::create([
+                'brand_id'        => $brand->id,
+                'model'           => $model,
+                'slug'            => $slug,
+                'year'            => rand(2017, 2024),
+                'km'              => rand(5000, 180000),
+                'price'           => rand(18000, 120000),
+
+                'fuel_type_id'    => fake()->randomElement($fuelTypes),
+                'transmission_id' => fake()->randomElement($transmissions),
+                'drive_id'        => fake()->randomElement($drives),
+                'badge_id'        => fake()->optional()->randomElement($badges),
+
+                'status'          => fake()->randomElement($statuses),
+                'description'     => fake()->paragraph(4),
             ]);
-
-            // 3️⃣ Fake-Bilder hinzufügen
-            $countImages = rand(3, 6);
-
-            for ($j = 1; $j <= $countImages; $j++) {
-                VehicleImage::create([
-                    'vehicle_id' => $vehicle->id,
-                    'path'       => "vehicles/{$vehicle->id}_{$j}.webp",
-                ]);
-            }
         }
     }
 }

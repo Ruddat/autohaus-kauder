@@ -60,14 +60,15 @@ public function refreshVehicles()
 
 public function render()
 {
-    $vehicles = Vehicle::query()
-        ->when($this->search, function ($q) {
-            $q->where('brand', 'like', "%{$this->search}%")
-              ->orWhere('model', 'like', "%{$this->search}%");
-        })
-        ->when($this->status, fn($q) => $q->where('status', $this->status))
-        ->orderBy($this->sort, $this->direction)
-        ->paginate(10);
+$vehicles = Vehicle::query()
+    ->with('images')
+    ->when($this->search, function ($q) {
+        $q->where('brand', 'like', "%{$this->search}%")
+          ->orWhere('model', 'like', "%{$this->search}%");
+    })
+    ->when($this->status, fn($q) => $q->where('status', $this->status))
+    ->orderBy($this->sort, $this->direction)
+    ->paginate(10);
 
     // Dashboard-Mode → nur Tabelle zurückgeben
     if ($this->mode === 'dashboard') {

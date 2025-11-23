@@ -16,6 +16,7 @@ Route::get('backend/vehicles/create', BackendVehiclesForm::class)
     ->name('backend.vehicles.create');
 
 Route::get('backend/vehicles/{vehicle}/edit', BackendVehiclesForm::class)
+    ->whereNumber('vehicle')
     ->name('backend.vehicles.edit');
 
 Route::delete('backend/vehicles/{vehicle}', function (\App\Models\Vehicle $vehicle) {

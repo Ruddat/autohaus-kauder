@@ -1,4 +1,6 @@
-<div class="flex items-center justify-between border-b border-[#333] pb-2">
-    <span class="text-[#BFBFBF] text-sm">{{ $label }}</span>
-    <span class="text-white font-medium">{{ $value }}</span>
+@props(['label', 'value'])
+
+<div class="flex justify-between border-b border-[#333] pb-2 text-sm">
+    <span class="text-[#BFBFBF]">{{ $label }}</span>
+    <span class="font-medium text-white text-right">{{ $value }}</span>
 </div>

@@ -10,6 +10,9 @@ class VehicleDetailController extends Controller
 {
     public function __invoke($slug)
     {
+
+//dd('VehicleDetailController invoked with slug: ' . $slug);
+
         $vehicle = Vehicle::where('slug', $slug)
             ->with('images')
             ->firstOrFail();
