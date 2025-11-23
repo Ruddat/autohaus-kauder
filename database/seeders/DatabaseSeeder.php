@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         FuelTransmissionSeeder::class,
         DriveSeeder::class,
         BadgeSeeder::class,
+        FeatureSeeder::class,
     ]);
 
 

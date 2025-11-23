@@ -13,11 +13,8 @@
     </div>
 </div>
 
-
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-
 
 <!-- Premium Gallery Wrapper -->
 <section class="gradient-bg py-8">
@@ -40,7 +37,7 @@
                         {{ number_format($vehicle->km, 0, ',', '.') }} km
                     </span>
                     <span class="flex items-center">
-                        <i class="fas fa-gas-pump mr-2"></i> {{ $vehicle->fuel }}
+                        <i class="fas fa-gas-pump mr-2"></i> {{ $vehicle->fuelRef->name ?? '—' }}
                     </span>
                 </div>
             </div>
@@ -67,27 +64,28 @@
                 @foreach($vehicle->images as $index => $img)
                     <div class="swiper-slide relative">
 
-                        <a href="{{ asset('storage/' . ($img->original ?? $img->hero)) }}"
-                           class="glightbox"
+                        {{-- 🔒 SPERRE + BANNER BEI RESERVIERT/VERKAUFT --}}
+                        @if($vehicle->status !== 'verfügbar')
+                            <!-- Diagonaler Banner -->
+                            <div class="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
+                                <div class="bg-[#B91C1C] text-white font-bold text-3xl px-10 py-3 opacity-80 transform rotate-[-20deg]">
+                                    {{ strtoupper($vehicle->status) }}
+                                </div>
+                            </div>
+
+                            <!-- Schwarzes Overlay -->
+                            <div class="absolute inset-0 bg-black/60 z-10 pointer-events-none"></div>
+                        @endif
+
+                        {{-- 🔥 Bild + Sperre der Lightbox --}}
+                        <a href="{{ Storage::url($img->original ?: $img->hero) }}"
+                           class="glightbox {{ $vehicle->status !== 'verfügbar' ? 'pointer-events-none' : '' }}"
                            data-gallery="vehicle-{{ $vehicle->id }}">
 
-                            <img src="{{ asset('storage/' . ($img->hero ?? $img->path)) }}"
-                                 class="w-full h-full object-cover">
-
+                            <img src="{{ Storage::url($img->hero ?: $img->path) }}"
+                                 class="w-full h-full object-cover
+                                 {{ $vehicle->status !== 'verfügbar' ? 'opacity-70' : '' }}">
                         </a>
-
-                        <!-- Status Badge -->
-                        @if($index === 0)
-                        <div class="absolute top-4 right-4 bg-[#B91C1C] text-white font-bold px-3 py-1 rounded-full text-sm">
-                            @if($vehicle->status === 'verfügbar')
-                                <i class="fas fa-bolt mr-1"></i> VERFÜGBAR
-                            @elseif($vehicle->status === 'reserviert')
-                                <i class="fas fa-clock mr-1"></i> RESERVIERT
-                            @else
-                                <i class="fas fa-ban mr-1"></i> VERKAUFT
-                            @endif
-                        </div>
-                        @endif
 
                     </div>
                 @endforeach
@@ -108,8 +106,19 @@
                          @click="activeIndex = {{ $index }}">
 
                         <div class="relative h-20 rounded-lg overflow-hidden border border-transparent hover:border-[#BFBFBF] transition">
-                            <img src="{{ asset('storage/' . ($img->thumb ?? $img->path)) }}"
-                                 class="w-full h-full object-cover">
+
+                            {{-- Thumbnail --}}
+                            <img src="{{ Storage::url($img->thumb ?: $img->path) }}"
+                                 class="w-full h-full object-cover
+                                        {{ $vehicle->status !== 'verfügbar' ? 'opacity-50' : '' }}">
+
+                            {{-- Kleines Badge im Thumbnail für Hauptbild --}}
+                            @if($img->is_main)
+                                <div class="absolute bottom-1 right-1 bg-[#B91C1C] text-white text-[10px] px-2 py-0.5 rounded">
+                                    Hauptbild
+                                </div>
+                            @endif
+
                         </div>
 
                     </div>

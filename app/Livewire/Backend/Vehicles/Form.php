@@ -48,45 +48,232 @@ class Form extends Component
     public $features_input = '';
     public $features = [];
 
-    protected function rules()
-    {
-        return [
-            'brand_id' => 'required|exists:vehicle_brands,id',
-            'model' => 'required|string|max:255',
-            'year' => 'required|integer|min:1900|max:' . now()->year,
-            'km' => 'required|integer|min:0',
-            'price' => 'required|integer|min:0',
 
-            'fuel_type_id' => 'required|exists:fuel_types,id',
-            'transmission_id' => 'required|exists:transmissions,id',
-            'drive_id' => 'nullable|exists:drives,id',
-            'badge_id' => 'nullable|exists:badges,id',
+// Technische Daten
+public $vehicle_number;
+public $vin;
+public $power;
+public $hp;
+public $kw;
+public $ccm;
+public $body_type;
+public $doors;
+public $seats;
 
-            'status' => 'required|in:verfügbar,reserviert,verkauft',
+// Farben & Innenraum
+public $color;
+public $color_code;
+public $interior;
+public $interior_color;
+public $interior_material;
 
-            'description' => 'nullable|string',
+// Verbrauch
+public $consumption;
+public $co2;
 
-            'gallery' => 'array|max:30',
-            'gallery.*' => 'image|max:8192',
-        ];
-    }
+// Flags
+public $is_new = 0;
+public $is_top = 0;
+public $is_hot_deal = 0;
 
-public function mount(Vehicle $vehicle = null)
+// Kategorie
+public $category;
+
+public $consumption_city;
+public $consumption_country;
+public $co2_norm = 'WLTP';
+public $eco_class = null;
+
+// Features
+public $featureSearch = '';
+public $featureSuggestions = [];
+public $featureCategory = 'Alle';
+public $allFeatureCategories = [];
+public $quickFeatures = [];
+
+
+protected function rules()
+{
+    return [
+        'brand_id' => 'required|exists:vehicle_brands,id',
+        'model' => 'required|string|max:255',
+        'year' => 'required|integer|min:1900|max:' . now()->year,
+        'km' => 'required|integer|min:0',
+        'price' => 'required|integer|min:0',
+
+        'fuel_type_id' => 'required|exists:fuel_types,id',
+        'transmission_id' => 'required|exists:transmissions,id',
+        'drive_id' => 'nullable|exists:drives,id',
+        'badge_id' => 'nullable|exists:badges,id',
+
+        'status' => 'required|in:verfügbar,reserviert,verkauft',
+        'description' => 'nullable|string',
+
+        'gallery' => 'array|max:30',
+        'gallery.*' => 'image|max:8192',
+
+        'vehicle_number' => 'nullable|string|max:50',
+        'vin' => 'nullable|string|max:50',
+        'power' => 'nullable|integer|min:0',
+        'hp' => 'nullable|integer|min:0',
+        'kw' => 'nullable|integer|min:0',
+        'ccm' => 'nullable|integer|min:0',
+        'body_type' => 'nullable|string|max:100',
+        'doors' => 'nullable|integer|min:1|max:6',
+        'seats' => 'nullable|integer|min:1|max:9',
+
+        'color' => 'nullable|string|max:50',
+        'color_code' => 'nullable|string|max:20',
+        'interior' => 'nullable|string|max:50',
+        'interior_color' => 'nullable|string|max:50',
+        'interior_material' => 'nullable|string|max:50',
+
+        // Verbrauch
+        'consumption_city'    => 'nullable|numeric|min:0|max:99.9',
+        'consumption_country' => 'nullable|numeric|min:0|max:99.9',
+        'consumption'         => 'nullable|numeric|min:0|max:99.9',
+
+        // CO₂
+        'co2' => 'nullable|numeric|min:0|max:999',
+
+        // Norm → 100 % korrekt
+        'co2_norm' => 'required|string|in:WLTP,NEFZ',
+
+        // Flags
+        'is_new' => 'boolean',
+        'is_top' => 'boolean',
+        'is_hot_deal' => 'boolean',
+
+        'category' => 'nullable|string|max:50',
+    ];
+}
+
+
+/**
+ * @param \App\Models\Vehicle|null $vehicle
+ */
+public function mount(?Vehicle $vehicle = null)
 {
     $this->vehicle = $vehicle;
 
     if ($vehicle) {
+
+        // Felder normal laden
         $this->fill($vehicle->only([
             'brand_id', 'model', 'slug', 'year', 'km', 'price',
             'price_net', 'vat', 'status', 'description',
-            'fuel_type_id', 'transmission_id', 'drive_id', 'badge_id'
+            'fuel_type_id', 'transmission_id', 'drive_id', 'badge_id',
+            'vehicle_number','vin','power','hp','kw','ccm',
+            'body_type','doors','seats',
+            'color','color_code','interior','interior_color','interior_material',
+            'consumption','co2',
+            'is_new','is_top','is_hot_deal',
+            'category',
+            'consumption_city','consumption_country','co2_norm',
         ]));
 
+        // 🔥 Automatische Fallback-Norm setzen
+        if (!$this->co2_norm) {
+            $this->co2_norm = 'WLTP';
+        }
+
+        // Verbräuche korrekt typisieren
+        $this->consumption_city = $vehicle->consumption_city !== null ? floatval($vehicle->consumption_city) : null;
+        $this->consumption_country = $vehicle->consumption_country !== null ? floatval($vehicle->consumption_country) : null;
+        $this->consumption = $vehicle->consumption !== null ? floatval($vehicle->consumption) : null;
+
+        // CO₂ typisieren
+        $this->co2 = $vehicle->co2 !== null ? floatval($vehicle->co2) : null;
+
+        // Features
         $this->features = $vehicle->features()->pluck('name')->toArray();
         $this->features_input = implode(', ', $this->features);
 
+        // Hauptbild
         $this->main_image_id = optional($vehicle->mainImage)->id;
     }
+
+    // Alle Feature-Kategorien laden
+$this->allFeatureCategories = \App\Models\Feature::whereNotNull('category')
+    ->distinct()
+    ->orderBy('category')
+    ->pluck('category')
+    ->toArray();
+
+$this->loadQuickFeatures();
+
+}
+
+
+public function loadQuickFeatures()
+{
+    $query = \App\Models\Feature::orderBy('category')->orderBy('name');
+
+    if ($this->featureCategory !== 'Alle') {
+        $query->where('category', $this->featureCategory);
+    }
+
+    $this->quickFeatures = $query->limit(60)->get();
+}
+
+public function setFeatureCategory($category)
+{
+    $this->featureCategory = $category;
+    $this->loadQuickFeatures();
+}
+
+
+public function updatedFeatureSearch()
+{
+    $term = trim($this->featureSearch);
+
+    if (strlen($term) < 2) {
+        $this->featureSuggestions = [];
+        return;
+    }
+
+    $this->featureSuggestions = \App\Models\Feature::where('name', 'like', "%{$term}%")
+        ->orderBy('name')
+        ->limit(10)
+        ->get();
+}
+
+
+public function addFeature($name = null)
+{
+    $name = trim($name ?? $this->featureSearch);
+
+    if ($name === '') return;
+
+    $slug = Str::slug($name);
+
+    // Feature existiert?
+    $feature = \App\Models\Feature::firstOrCreate(
+        ['slug' => $slug],
+        [
+            'name' => $name,
+            'category' => $this->featureCategory !== 'Alle'
+                ? $this->featureCategory
+                : null,
+        ]
+    );
+
+    if (!in_array($feature->slug, $this->features)) {
+        $this->features[] = $feature->slug;
+    }
+
+    $this->featureSearch = '';
+    $this->featureSuggestions = [];
+}
+
+
+public function removeFeature($slug)
+{
+    $this->features = array_filter(
+        $this->features,
+        fn($f) => $f !== $slug
+    );
+    $this->features = array_values($this->features);
 }
 
     public function updated($field)
@@ -109,6 +296,9 @@ public function mount(Vehicle $vehicle = null)
 
     public function save(ImageService $imageService)
     {
+
+      // dd($this->kw);
+
         $this->validate();
 
         // Slug vorbereiten
@@ -125,6 +315,9 @@ public function mount(Vehicle $vehicle = null)
         ) {
             $slug = $base . '-' . $i++;
         }
+
+
+
 
         // Speicherdaten
         $data = [
@@ -143,7 +336,40 @@ public function mount(Vehicle $vehicle = null)
             'transmission_id' => $this->transmission_id,
             'drive_id' => $this->drive_id,
             'badge_id' => $this->badge_id,
+
+'vehicle_number' => $this->vehicle_number,
+'vin' => $this->vin,
+'power' => $this->power,
+'hp' => $this->hp,
+'kw' => $this->kw,
+'ccm' => $this->ccm,
+'body_type' => $this->body_type,
+'doors' => $this->doors,
+'seats' => $this->seats,
+
+'color' => $this->color,
+'color_code' => $this->color_code,
+'interior' => $this->interior,
+'interior_color' => $this->interior_color,
+'interior_material' => $this->interior_material,
+
+'consumption' => $this->consumption,
+'co2' => $this->co2,
+
+'is_new' => $this->is_new ? 1 : 0,
+'is_top' => $this->is_top ? 1 : 0,
+'is_hot_deal' => $this->is_hot_deal ? 1 : 0,
+
+'category' => $this->category,
+
+'consumption_city' => $this->consumption_city,
+'consumption_country' => $this->consumption_country,
+'co2_norm' => $this->co2_norm,
+
         ];
+
+//dd($data);
+
 
         $vehicle = $this->vehicle
             ? tap($this->vehicle)->update($data)
@@ -152,7 +378,8 @@ public function mount(Vehicle $vehicle = null)
         $this->vehicle = $vehicle;
 
         // FEATURES
-        FeatureService::syncFeatures($vehicle, $this->features);
+//        FeatureService::syncFeatures($vehicle, $this->features);
+        FeatureService::syncFeatures($vehicle, $this->features); // enthält Slugs!
 
         // BILDER UPLOAD
         if (!empty($this->gallery)) {
@@ -210,6 +437,16 @@ public function removeNewImage($index) { unset($this->gallery[$index]); $this->g
  public function setMainImage($imageId) { $this->main_image_id = $imageId; }
 
 
+ public function updatedKw($value)
+{
+    if ($value !== null && $value !== '') {
+        $this->hp = round($value * 1.35962);
+    } else {
+        $this->hp = null;
+    }
+}
+
+
 public function deleteImage($imageId)
 {
     $image = VehicleImage::findOrFail($imageId);
@@ -252,6 +489,48 @@ public function deleteImage($imageId)
 }
 
 
+public function updatedConsumptionCity($value)
+{
+    $this->updateCombined();
+}
+
+public function updatedConsumptionCountry($value)
+{
+    $this->updateCombined();
+}
+
+private function updateCombined()
+{
+    if (is_numeric($this->consumption_city) && is_numeric($this->consumption_country)) {
+        $city = floatval($this->consumption_city);
+        $country = floatval($this->consumption_country);
+
+        // WLTP-Gewichtung
+        $this->consumption = round(($city * 0.55) + ($country * 0.45), 1);
+    }
+}
+
+public function updatedCo2($value)
+{
+
+$value = str_replace([',', ' '], ['.', ''], $value);
+
+
+    if (!is_numeric($value)) {
+        $this->eco_class = null;
+        return;
+    }
+
+    $value = floatval($value);
+
+    if ($value < 100) {
+        $this->eco_class = 'green';
+    } elseif ($value < 150) {
+        $this->eco_class = 'yellow';
+    } else {
+        $this->eco_class = 'red';
+    }
+}
 
 
     public function render()

@@ -66,8 +66,15 @@
     <p class="text-xs mt-2 text-gray-400">Aktuelles Bild:</p>
     <img src="{{ asset('storage/' . $existingImage) }}"
          class="h-24 rounded-lg mt-1 border border-[#333] object-cover">
+
+    <button wire:click="deleteImage"
+            class="mt-3 bg-red-600/20 border border-red-600 text-red-400 px-3 py-1 text-xs rounded-lg">
+        Bild löschen
+    </button>
 @endif
-        </div>
+
+
+</div>
 
     </div>
 
@@ -98,8 +105,14 @@
         @foreach ($team as $m)
             <div class="border border-[#333] glass-effect p-4 rounded-2xl">
                 <div class="flex items-center gap-4">
-                    <img src="{{ asset('storage/' . $m->image) }}"
-                         class="w-20 h-20 rounded-full object-cover">
+@if($m->image)
+    <img src="{{ asset('storage/' . $m->image) }}"
+         class="w-20 h-20 rounded-full object-cover">
+@else
+    <div class="w-20 h-20 rounded-full bg-[#1E1E1E] flex items-center justify-center">
+        <i class="fas fa-user text-3xl text-[#777]"></i>
+    </div>
+@endif
 
                     <div>
                         <div class="font-bold">{{ $m->name }}</div>

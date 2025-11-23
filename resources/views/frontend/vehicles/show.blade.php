@@ -47,11 +47,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-
-
-
-
-
-
-
 </x-frontend-layout>

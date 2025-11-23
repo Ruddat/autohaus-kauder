@@ -8,15 +8,25 @@ use App\Http\Controllers\Controller;
 
 class VehicleDetailController extends Controller
 {
-    public function __invoke($slug)
-    {
+public function __invoke($slug)
+{
+$vehicle = Vehicle::where('slug', $slug)
+    ->with([
+        'images' => function ($q) {
+            $q->orderByDesc('is_main')->orderBy('sort_order');
+        },
 
-//dd('VehicleDetailController invoked with slug: ' . $slug);
+        'features' => function ($q) {
+            $q->orderBy('category')->orderBy('name');
+        },
 
-        $vehicle = Vehicle::where('slug', $slug)
-            ->with('images')
-            ->firstOrFail();
+        'brandRef',
+        'fuelRef',
+        'transmissionRef',
+        'driveRef',
+    ])
+    ->firstOrFail();
 
-        return view('frontend.vehicles.show', compact('vehicle'));
-    }
+    return view('frontend.vehicles.show', compact('vehicle'));
+}
 }

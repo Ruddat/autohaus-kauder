@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-10">
 
     @if (session()->has('success'))
         <div class="bg-green-500/20 text-green-300 px-4 py-3 rounded-xl border border-green-500/30">
@@ -23,7 +23,7 @@
 
         {{-- LEFT: Daten --}}
         <div class="lg:col-span-2 glass-effect rounded-2xl p-6 border border-[#333] space-y-6">
-
+    <h2 class="text-xl font-bold mb-4">Stammdaten</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="text-sm text-[#BFBFBF]">Marke *</label>
@@ -83,7 +83,9 @@
                 </div>
             </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
 
     {{-- Kraftstoff --}}
     <div>
@@ -132,23 +134,353 @@
 
 </div>
 
-            {{-- Ausstattungs-Tags --}}
-            <div>
-                <label class="text-sm text-[#BFBFBF]">Ausstattung (Tags, Komma-getrennt)</label>
-                <input type="text" wire:model.live="features_input"
-                       placeholder="Panorama, Leder, Keyless Go, 360° Kamera..."
-                       class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
 
-                @if(!empty($features))
-                    <div class="flex flex-wrap gap-2 mt-2">
-                        @foreach($features as $f)
-                            <span class="bg-[#B91C1C]/20 text-[#ffb3b3] text-xs px-2 py-1 rounded-full border border-[#B91C1C]/30">
-                                {{ $f }}
-                            </span>
-                        @endforeach
-                    </div>
+
+<h2 class="text-xl font-bold mb-4">Technische Daten</h2>
+
+<div class="glass-effect rounded-xl p-6 border border-[#333] space-y-8">
+
+
+    {{-- 🔥 LEISTUNG --}}
+    <div>
+        <label class="text-sm text-[#BFBFBF] font-semibold mb-2 block">Leistung</label>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {{-- kW --}}
+            <div class="relative">
+                <label class="text-xs text-[#888]">kW *</label>
+                <input type="number" wire:model.live="kw"
+                       class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-10 py-3
+                       focus:border-[#B91C1C] transition duration-300">
+
+                <span class="absolute left-3 top-9 text-[#B91C1C]">⚡</span>
+                <span class="absolute right-3 top-9 text-xs text-[#888]" title="kW eingeben – PS berechnet automatisch">ⓘ</span>
+            </div>
+
+            {{-- PS automatisch --}}
+            <div class="relative">
+                <label class="text-xs text-[#888]">PS (automatisch)</label>
+                <input type="number" wire:model="hp" readonly
+                       class="w-full bg-[#1E1E1E] border border-[#444] rounded-lg px-10 py-3
+                       opacity-70 cursor-not-allowed
+                       transition-all duration-500"
+                       @if($hp) style="box-shadow:0 0 10px #b91c1c55;" @endif>
+
+                <span class="absolute left-3 top-9 text-[#BFBFBF]">🏎️</span>
+                @if($hp)
+                    <span class="absolute right-3 top-9 bg-[#B91C1C] text-white text-[10px] px-2 py-1 rounded-full">
+                        AUTO
+                    </span>
                 @endif
             </div>
+
+        </div>
+
+        {{-- Live Text --}}
+        @if($kw)
+            <div class="mt-2 text-xs text-[#BFBFBF]">
+                {{ $kw }} kW entsprechen etwa
+                <span class="text-[#B91C1C] font-bold">{{ $hp }} PS</span>.
+            </div>
+        @endif
+
+        {{-- Motor Kategorie --}}
+        @php
+            $cat = null;
+            if ($hp < 100) $cat = 'Eco';
+            elseif ($hp < 150) $cat = 'Comfort';
+            elseif ($hp < 250) $cat = 'Sport';
+            else $cat = 'Performance';
+        @endphp
+
+        @if($hp)
+            <div class="mt-3 text-xs text-[#BFBFBF]">
+                Motor-Kategorie:
+                <span class="
+                    @if($cat == 'Eco') text-green-400
+                    @elseif($cat == 'Comfort') text-blue-400
+                    @elseif($cat == 'Sport') text-yellow-400
+                    @else text-red-400 @endif
+                    font-bold
+                ">
+                    {{ $cat }}
+                </span>
+            </div>
+        @endif
+    </div>
+
+
+
+    {{-- 🔥 HUBRAUM / TÜREN / SITZE --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div>
+            <label class="text-sm text-[#BFBFBF] font-medium">Hubraum (ccm)</label>
+            <input type="number" wire:model="ccm"
+                   class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-3">
+        </div>
+
+        <div>
+            <label class="text-sm text-[#BFBFBF] font-medium">Türen</label>
+            <input type="number" wire:model="doors"
+                   class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-3">
+        </div>
+
+        <div>
+            <label class="text-sm text-[#BFBFBF] font-medium">Sitze</label>
+            <input type="number" wire:model="seats"
+                   class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-3">
+        </div>
+
+        <div>
+            <label class="text-sm text-[#BFBFBF] font-medium">Karosserie</label>
+            <input type="text" wire:model="body_type"
+                   class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-3">
+        </div>
+
+    </div>
+
+
+
+    {{-- 🔥 VERBRAUCH --}}
+    <div>
+        <label class="text-sm text-[#BFBFBF] font-semibold mb-2 block">Verbrauch (WLTP)</label>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {{-- Stadt --}}
+            <div class="relative">
+                <label class="text-xs text-[#888]">Stadt</label>
+                <input type="text" wire:model.change="consumption_city"
+                       placeholder="z. B. 8,1 l/100km"
+                       class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-10 py-3">
+                <span class="absolute left-3 top-9 text-[#BFBFBF]">🏙️</span>
+            </div>
+
+            {{-- Land --}}
+            <div class="relative">
+                <label class="text-xs text-[#888]">Land</label>
+                <input type="text" wire:model.change="consumption_country"
+                       placeholder="z. B. 5,9 l/100km"
+                       class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-10 py-3">
+                <span class="absolute left-3 top-9 text-[#BFBFBF]">🌄</span>
+            </div>
+
+            {{-- Kombiniert --}}
+            <div class="relative">
+                <label class="text-xs text-[#888]">Kombiniert</label>
+                <input type="text" wire:model="consumption"
+                       placeholder="z. B. 6,8 l/100km"
+                       class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-10 py-3">
+                <span class="absolute left-3 top-9 text-[#BFBFBF]">🔄</span>
+            </div>
+
+        </div>
+    </div>
+
+
+{{-- 🔥 CO₂ + UMWELTPLAKETTE --}}
+<div>
+    <label class="text-sm text-[#BFBFBF] font-semibold mb-2 block">CO₂ & Umweltplakette</label>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {{-- CO₂ Eingabe --}}
+        <div class="relative">
+            <label class="text-xs text-[#888]">CO₂-Ausstoß (g/km)</label>
+
+            <div class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg py-3 px-10 relative">
+
+                {{-- Farbiges Icon je nach CO₂ --}}
+                <span class="absolute left-3 top-[14px] text-lg">
+                    @if($eco_class === 'green')
+                        🟢
+                    @elseif($eco_class === 'yellow')
+                        🟡
+                    @elseif($eco_class === 'red')
+                        🔴
+                    @else
+                        🌍
+                    @endif
+                </span>
+
+                <input type="number"
+                       wire:model.live="co2"
+                       placeholder="z. B. 120"
+                       class="bg-transparent outline-none w-full text-white pl-2">
+            </div>
+        </div>
+
+        {{-- PLAKETTE AUTOMATISCH --}}
+        <div>
+            <label class="text-xs text-[#888]">Plakette</label>
+
+            <div class="px-10 py-3 rounded-lg border border-[#444] bg-[#1E1E1E] flex items-center relative">
+
+                <span class="absolute left-3 top-[14px] text-lg">
+                    @if($eco_class === 'green')
+                        🟢
+                    @elseif($eco_class === 'yellow')
+                        🟡
+                    @elseif($eco_class === 'red')
+                        🔴
+                    @endif
+                </span>
+
+                @if($eco_class === 'green')
+                    <span class="text-green-400 font-semibold">Grün</span>
+                @elseif($eco_class === 'yellow')
+                    <span class="text-yellow-400 font-semibold">Gelb</span>
+                @elseif($eco_class === 'red')
+                    <span class="text-red-400 font-semibold">Rot</span>
+                @else
+                    <span class="text-gray-400">–</span>
+                @endif
+            </div>
+        </div>
+
+        {{-- Norm --}}
+        <div>
+            <label class="text-xs text-[#888]">Messnorm</label>
+            <select wire:model="co2_norm"
+                    class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-3">
+                <option value="WLTP">WLTP</option>
+                <option value="NEFZ">NEFZ</option>
+            </select>
+        </div>
+
+    </div>
+</div>
+
+
+
+</div>
+
+
+
+{{-- Farben & Innenraum --}}
+
+    <h2 class="text-xl font-bold mb-4">Farben & Innenraum</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Farbe außen</label>
+        <input type="text" wire:model="color"
+               class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Farbcode</label>
+        <input type="text" wire:model="color_code"
+               class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Innenraum</label>
+        <input type="text" wire:model="interior"
+               class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Innenfarbe</label>
+        <input type="text" wire:model="interior_color"
+               class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+        <label class="text-sm text-[#BFBFBF]">Innenmaterial</label>
+        <input type="text" wire:model="interior_material"
+               class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+    </div>
+
+</div>
+
+
+            {{-- Ausstattungs-Tags --}}
+<div class="space-y-3">
+    <label class="text-sm text-[#BFBFBF] font-semibold">Ausstattung</label>
+
+    {{-- Kategorien --}}
+    <div class="flex flex-wrap gap-2">
+
+        <button type="button"
+                wire:click="setFeatureCategory('Alle')"
+                class="text-xs px-3 py-1 rounded-full border
+                       {{ $featureCategory==='Alle'
+                          ? 'bg-[#B91C1C] text-white border-[#B91C1C]'
+                          : 'border-[#444] text-[#BFBFBF] hover:bg-[#333]' }}">
+            Alle
+        </button>
+
+        @foreach($allFeatureCategories as $cat)
+            <button type="button"
+                    wire:click="setFeatureCategory('{{ $cat }}')"
+                    class="text-xs px-3 py-1 rounded-full border
+                           {{ $featureCategory===$cat
+                              ? 'bg-[#B91C1C] text-white border-[#B91C1C]'
+                              : 'border-[#444] text-[#BFBFBF] hover:bg-[#333]' }}">
+                {{ $cat }}
+            </button>
+        @endforeach
+    </div>
+
+    {{-- Suchfeld --}}
+    <div class="relative">
+        <input type="text"
+               wire:model.live="featureSearch"
+               wire:keydown.enter.prevent="addFeature"
+               placeholder="Ausstattung suchen oder neu eingeben…"
+               class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+
+        @if($featureSuggestions)
+            <div class="absolute z-30 w-full bg-[#1E1E1E] border border-[#333] mt-1 rounded-lg">
+                @foreach($featureSuggestions as $s)
+                    <button type="button"
+                            wire:click="addFeature('{{ $s->name }}')"
+                            class="block w-full text-left px-3 py-1 hover:bg-[#333]">
+                        {{ $s->name }}
+                    </button>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    {{-- Quick Picks --}}
+    <div class="flex flex-wrap gap-2">
+        @foreach($quickFeatures as $qf)
+            <button type="button"
+                    wire:click="addFeature('{{ $qf->name }}')"
+                    class="text-xs px-2 py-1 rounded-full border
+                           {{ in_array($qf->slug, $features)
+                              ? 'bg-[#B91C1C]/30 border-[#B91C1C]'
+                              : 'border-[#444] text-[#BFBFBF] hover:border-[#B91C1C]' }}">
+                {{ $qf->name }}
+            </button>
+        @endforeach
+    </div>
+
+    {{-- Ausgewählte Tags --}}
+    <div class="flex flex-wrap gap-2 pt-2">
+        @foreach($features as $slug)
+            @php
+                $f = \App\Models\Feature::where('slug', $slug)->first();
+            @endphp
+
+            @if($f)
+                <span class="px-2 py-1 text-xs bg-[#B91C1C]/20 border border-[#B91C1C]/30
+                             text-[#ffb3b3] rounded-full flex items-center gap-1">
+                    {{ $f->name }}
+                    <button type="button" wire:click="removeFeature('{{ $slug }}')" class="text-red-300">
+                        ✕
+                    </button>
+                </span>
+            @endif
+        @endforeach
+    </div>
+</div>
+
 
             {{-- Beschreibung --}}
             <div>
@@ -172,6 +504,16 @@
                 </select>
                 @error('status') <div class="text-red-400 text-xs mt-1">{{ $message }}</div> @enderror
             </div>
+
+{{-- Kategorie --}}
+<div>
+    <label class="text-sm text-[#BFBFBF]">Kategorie</label>
+    <input type="text" wire:model="category"
+           placeholder="SUV, Limousine, Kombi …"
+           class="w-full bg-[#2D2D2D] border border-[#444] rounded-lg px-3 py-2">
+</div>
+
+{{-- Badge --}}
 
 <div>
     <label class="text-sm text-[#BFBFBF]">Badge</label>

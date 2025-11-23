@@ -68,6 +68,12 @@ class VehicleSeeder extends Seeder
 
                 'status'          => fake()->randomElement($statuses),
                 'description'     => fake()->paragraph(4),
+
+                'consumption_city' => '8.1',
+                'consumption_country' => '5.9',
+                'consumption' => '6.8',
+                'co2_norm' => 'WLTP',
+
             ]);
         }
     }

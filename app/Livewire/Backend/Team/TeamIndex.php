@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\TeamMember;
 use Livewire\WithFileUploads;
 use App\Services\ImageService;
+use Illuminate\Support\Facades\Storage;
 
 class TeamIndex extends Component
 {
@@ -88,6 +89,32 @@ $this->reset(['team_id','name','position','bio','sort_order','image','existingIm
         TeamMember::find($id)?->delete();
         session()->flash('success', 'Teammitglied gelöscht.');
     }
+
+
+public function deleteImage()
+{
+    if (!$this->team_id) {
+        return;
+    }
+
+    $member = TeamMember::findOrFail($this->team_id);
+
+    // Datei löschen
+    if ($member->image && Storage::exists($member->image)) {
+        Storage::delete($member->image);
+    }
+
+    // DB-Spalte auf null setzen
+    $member->image = null;
+    $member->save();
+
+    // Formular-UI aktualisieren
+    $this->existingImage = null;
+    $this->image = null;
+
+    session()->flash('success', 'Bild wurde entfernt.');
+}
+
 
     public function render()
     {

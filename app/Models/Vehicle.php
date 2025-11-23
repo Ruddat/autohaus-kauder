@@ -16,12 +16,39 @@ class Vehicle extends Model
         'status',
         'description',
         'slug',
+        'price_net',
+        'vat',
+        'vehicle_number',
+        'vin',
+        'power',
+        'hp',
+        'kw',
+        'ccm',
+        'body_type',
+        'doors',
+        'seats',
+        'color',
+        'color_code',
+        'interior',
+        'interior_color',
+        'interior_material',
+        'consumption',
+        'co2',
+        'is_new',
+        'is_top',
+        'is_hot_deal',
+        'category',
+
 
         // neue Felder
         'fuel_type_id',
         'transmission_id',
         'drive_id',
         'badge_id',
+        'consumption_city',
+        'consumption_country',
+        'consumption',
+        'co2_norm',
     ];
 
     // ❌ Altes Casting ENTFERNT
@@ -38,15 +65,6 @@ class Vehicle extends Model
         });
     }
 
-    public function features()
-    {
-        return $this->belongsToMany(\App\Models\Feature::class, 'vehicle_feature');
-    }
-
-    public function brandRef()
-    {
-        return $this->belongsTo(VehicleBrand::class, 'brand_id');
-    }
 
     public function isVatDeductible(): bool
     {
@@ -82,4 +100,31 @@ class Vehicle extends Model
     {
         return $this->belongsTo(\App\Models\Badge::class, 'badge_id');
     }
+
+
+public function brandRef()
+{
+    return $this->belongsTo(\App\Models\VehicleBrand::class, 'brand_id');
+}
+
+public function fuelRef()
+{
+    return $this->belongsTo(\App\Models\FuelType::class, 'fuel_type_id');
+}
+
+public function transmissionRef()
+{
+    return $this->belongsTo(\App\Models\Transmission::class, 'transmission_id');
+}
+
+public function driveRef()
+{
+    return $this->belongsTo(\App\Models\Drive::class, 'drive_id');
+}
+
+public function features()
+{
+    return $this->belongsToMany(\App\Models\Feature::class, 'vehicle_feature');
+}
+
 }

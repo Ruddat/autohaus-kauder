@@ -5,100 +5,131 @@
             <!-- Main Content -->
             <div class="lg:col-span-2">
 
-                <!-- Beschreibung -->
-                <div class="glass-effect rounded-2xl p-8 border border-[#333] mb-8">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
-                        <i class="fas fa-file-alt mr-3 text-[#B91C1C]"></i> Fahrzeugbeschreibung
-                    </h2>
-
-                    <p class="text-[#BFBFBF] mb-4">
-                        Der Mercedes-Benz E 350 e AMG Line vereint eleganteres Design mit modernster Hybrid-Technologie.
-                    </p>
-
-                    <p class="text-[#BFBFBF]">
-                        Ausgestattet mit dem AMG Line Paket, inklusive Sportfahrwerk, Ledersitzen, Panoramadach und MBUX.
-                    </p>
-                </div>
-
                 <!-- Technische Daten -->
-                <div class="glass-effect rounded-2xl p-8 border border-[#333] mb-8">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
-                        <i class="fas fa-cogs mr-3 text-[#B91C1C]"></i> Technische Daten
-                    </h2>
+<div class="glass-effect rounded-2xl p-8 border border-[#333] mb-8">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <h2 class="text-2xl font-bold mb-6 flex items-center">
+        <i class="fas fa-cogs mr-3 text-[#B91C1C]"></i> Technische Daten
+    </h2>
 
-                        <div class="space-y-4">
-                            <x-vehicle-attribute label="Marke" value="Mercedes-Benz"/>
-                            <x-vehicle-attribute label="Modell" value="E 350 e"/>
-                            <x-vehicle-attribute label="Erstzulassung" value="März 2022"/>
-                            <x-vehicle-attribute label="Kilometerstand" value="15.300 km"/>
-                            <x-vehicle-attribute label="Leistung" value="215 kW (292 PS)"/>
-                        </div>
+    {{-- SECTION: MOTOR & LEISTUNG --}}
+    <h3 class="text-lg font-semibold text-white mb-3">Motor & Leistung</h3>
 
-                        <div class="space-y-4">
-                            <x-vehicle-attribute label="Kraftstoff" value="Hybrid"/>
-                            <x-vehicle-attribute label="Verbrauch" value="1,8 l/100km"/>
-                            <x-vehicle-attribute label="Getriebe" value="9-Gang Automatik"/>
-                            <x-vehicle-attribute label="Farbe" value="Obsidianschwarz Metallic"/>
-                            <x-vehicle-attribute label="Innenausstattung" value="Leder Schwarz/Anthrazit"/>
-                        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
-                    </div>
-                </div>
+        <x-vehicle-attribute label="Leistung"
+            :value="$vehicle->kw ? $vehicle->kw.' kW ('.$vehicle->hp.' PS)' : '—'" />
+
+        @if($vehicle->ccm)
+            <x-vehicle-attribute label="Hubraum"
+                :value="number_format($vehicle->ccm, 0, ',', '.') . ' ccm'" />
+        @endif
+
+        <x-vehicle-attribute label="Kraftstoff"
+            :value="$vehicle->fuelRef->name ?? '—'" />
+
+        <x-vehicle-attribute label="Getriebe"
+            :value="$vehicle->transmissionRef->name ?? '—'" />
+
+        <x-vehicle-attribute label="Antrieb"
+            :value="$vehicle->driveRef->name ?? '—'" />
+
+    </div>
+
+    {{-- SECTION: VERBRAUCH --}}
+    <h3 class="text-lg font-semibold text-white mb-3">Verbrauch</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <x-vehicle-attribute label="Stadt" :value="$vehicle->consumption_city ? $vehicle->consumption_city . ' l/100km' : '—'" />
+        <x-vehicle-attribute label="Land" :value="$vehicle->consumption_country ? $vehicle->consumption_country . ' l/100km' : '—'" />
+        <x-vehicle-attribute label="Kombiniert" :value="$vehicle->consumption ? $vehicle->consumption . ' l/100km' : '—'" />
+        <x-vehicle-attribute label="Norm" :value="$vehicle->co2_norm ?? 'WLTP'" />
+    </div>
+
+    {{-- SECTION: EMISSIONEN --}}
+    <h3 class="text-lg font-semibold text-white mb-3">Emissionen</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <x-vehicle-attribute label="CO₂" :value="$vehicle->co2 ? $vehicle->co2 . ' g/km' : '—'" />
+
+        <x-vehicle-attribute label="Umweltplakette"
+            :value="match(true) {
+                $vehicle->co2 < 100 => '🟢 Grün',
+                $vehicle->co2 < 150 => '🟡 Gelb',
+                default => '🔴 Rot',
+            }" />
+    </div>
+
+    {{-- SECTION: FAHRZEUGDATEN --}}
+    <h3 class="text-lg font-semibold text-white mb-3">Fahrzeugdaten</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <x-vehicle-attribute label="Erstzulassung"
+            :value="$vehicle->year ?? '—'" />
+
+        <x-vehicle-attribute label="Kilometer"
+            :value="number_format($vehicle->km, 0, ',', '.') . ' km'" />
+
+        <x-vehicle-attribute label="Türen"
+            :value="$vehicle->doors ?? '—'" />
+
+        <x-vehicle-attribute label="Sitze"
+            :value="$vehicle->seats ?? '—'" />
+
+        <x-vehicle-attribute label="Karosserie"
+            :value="$vehicle->body_type ?? '—'" />
+
+        <x-vehicle-attribute label="Farbe"
+            :value="$vehicle->color ?? '—'" />
+
+        <x-vehicle-attribute label="Innenraum"
+            :value="collect([$vehicle->interior, $vehicle->interior_color, $vehicle->interior_material])
+                        ->filter()->implode(' • ') ?: '—'" />
+    </div>
+
+</div>
+
 
                 <!-- Ausstattung -->
-                <div class="glass-effect rounded-2xl p-8 border border-[#333]">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
-                        <i class="fas fa-star mr-3 text-[#B91C1C]"></i> Ausstattung
-                    </h2>
+<div class="bg-[#111] rounded-2xl p-10 border border-[#222]">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @foreach ([
-                            'AMG Line Paket',
-                            'Panoramadach',
-                            'Lenkradheizung',
-                            'Memory-Sitze',
-                            'Keyless Go',
-                            '360° Kamera',
-                            'Burmester Soundsystem',
-                            'Head-up Display',
-                            'LED-Scheinwerfer',
-                            'Sportfahrwerk',
-                            'Ambientebeleuchtung',
-                            'Massagesitze',
-                        ] as $feature)
-                        <div class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>{{ $feature }}</span>
+    <div class="flex items-center mb-8">
+        <div class="text-[#B91C1C] text-3xl mr-3">★</div>
+        <h2 class="text-2xl font-bold">Ausstattung</h2>
+    </div>
+
+    @php $grouped = $vehicle->features->groupBy('category'); @endphp
+
+    <div class="divide-y divide-[#222]">
+
+        @foreach($grouped as $category => $items)
+
+            <div class="py-6">
+                <h3 class="text-lg font-semibold text-white mb-4 uppercase tracking-wide text-[#888]">
+                    {{ $category ?? 'Weitere Ausstattung' }}
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                    @foreach($items as $feature)
+                        <div class="flex items-center text-[#ccc]">
+                            <span class="text-[#2ecc71] text-sm mr-2">✓</span>
+                            {{ $feature->name }}
                         </div>
-                        @endforeach
-                    </div>
+                    @endforeach
 
                 </div>
-
             </div>
 
-                <!-- Sidebar -->
-                <div class="sticky-sidebar">
-                    <!-- Contact Card -->
+        @endforeach
 
-                    @include('frontend.vehicles.sections.sidebar')
+    </div>
 
-            </div>
-        </div>
-    </section>
-
-
-<section class="py-12 bg-[#0f0f0f]">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-
-            <!-- Main Content -->
-            <div class="lg:col-span-2">
+</div>
 
                 <!-- Beschreibung -->
-                <div class="glass-effect rounded-2xl p-8 border border-[#333] mb-8">
+                <div class="glass-effect rounded-2xl p-8 border border-[#333] mt-8 mb-8">
                     <h2 class="text-2xl font-bold mb-6 flex items-center">
                         <i class="fas fa-file-alt mr-3 text-[#B91C1C]"></i> Fahrzeugbeschreibung
                     </h2>
@@ -114,98 +145,6 @@
                     @endif
                 </div>
 
-                <!-- Technische Daten -->
-                <div class="glass-effect rounded-2xl p-8 border border-[#333] mb-8">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
-                        <i class="fas fa-cogs mr-3 text-[#B91C1C]"></i> Technische Daten
-                    </h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <div class="space-y-4">
-                            <x-vehicle-attribute label="Marke"
-                                :value="$vehicle->brandRef->name ?? '—'" />
-
-                            <x-vehicle-attribute label="Modell"
-                                :value="$vehicle->model ?? '—'" />
-
-                            <x-vehicle-attribute label="Erstzulassung"
-                                :value="$vehicle->year ? $vehicle->year : '—'" />
-
-                            <x-vehicle-attribute label="Kilometerstand"
-                                :value="$vehicle->km !== null ? number_format($vehicle->km, 0, ',', '.') . ' km' : '—'" />
-
-                            <x-vehicle-attribute label="Leistung"
-                                :value="($vehicle->kw || $vehicle->hp)
-                                    ? trim(($vehicle->kw ? $vehicle->kw.' kW' : '').' '.($vehicle->hp ? '('.$vehicle->hp.' PS)' : ''))
-                                    : '—'" />
-
-                            @if($vehicle->ccm)
-                                <x-vehicle-attribute label="Hubraum"
-                                    :value="number_format($vehicle->ccm, 0, ',', '.') . ' ccm'" />
-                            @endif
-
-                            @if($vehicle->doors)
-                                <x-vehicle-attribute label="Türen" :value="$vehicle->doors" />
-                            @endif
-
-                            @if($vehicle->seats)
-                                <x-vehicle-attribute label="Sitze" :value="$vehicle->seats" />
-                            @endif
-                        </div>
-
-                        <div class="space-y-4">
-                            <x-vehicle-attribute label="Kraftstoff"
-                                :value="$vehicle->fuel ?? '—'" />
-
-                            <x-vehicle-attribute label="Verbrauch"
-                                :value="$vehicle->consumption ?? '—'" />
-
-                            <x-vehicle-attribute label="Getriebe"
-                                :value="$vehicle->gear ?? '—'" />
-
-                            <x-vehicle-attribute label="Antrieb"
-                                :value="$vehicle->drive ?? '—'" />
-
-                            <x-vehicle-attribute label="Farbe"
-                                :value="$vehicle->color ?? '—'" />
-
-                            <x-vehicle-attribute label="Innenausstattung"
-                                :value="collect([
-                                        $vehicle->interior,
-                                        $vehicle->interior_color,
-                                        $vehicle->interior_material
-                                    ])->filter()->implode(' • ') ?: '—'" />
-
-                            @if($vehicle->co2)
-                                <x-vehicle-attribute label="CO₂" :value="$vehicle->co2" />
-                            @endif
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Ausstattung -->
-                <div class="glass-effect rounded-2xl p-8 border border-[#333]">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center">
-                        <i class="fas fa-star mr-3 text-[#B91C1C]"></i> Ausstattung
-                    </h2>
-
-                    @if($vehicle->features && $vehicle->features->count())
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @foreach ($vehicle->features as $feature)
-                                <div class="flex items-center">
-                                    <i class="fas fa-check text-green-500 mr-3"></i>
-                                    <span>{{ $feature->name }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-[#BFBFBF] italic">
-                            Keine Ausstattungsmerkmale hinterlegt.
-                        </p>
-                    @endif
-                </div>
 
             </div>
 
